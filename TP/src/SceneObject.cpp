@@ -19,6 +19,21 @@ void SceneObject::render() const {
     _mesh->draw();
 }
 
+bool IsInPlane(glm::vec3 normal, glm::vec3 pos, float ray)
+{
+    return (glm::dot(normal, pos) + ray) > 0;
+}
+bool SceneObject::ObjInFrustrum(const Frustum frustum, glm::vec3 cam_pos) const
+{
+    glm::vec3 v = _mesh->BoundingSphereCenter - cam_pos;
+    bool ret = IsInPlane(frustum._top_normal, v, _mesh->BoundingSphereRay) &&
+               IsInPlane(frustum._bottom_normal, v, _mesh->BoundingSphereRay) &&
+               IsInPlane(frustum._left_normal, v, _mesh->BoundingSphereRay) &&
+               IsInPlane(frustum._right_normal, v, _mesh->BoundingSphereRay) &&
+               IsInPlane(frustum._near_normal, v, _mesh->BoundingSphereRay);
+    return ret;
+}
+
 void SceneObject::set_transform(const glm::mat4& tr) {
     _transform = tr;
 }
