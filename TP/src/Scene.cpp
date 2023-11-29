@@ -1,8 +1,14 @@
 #include "Scene.h"
 
 #include <TypedBuffer.h>
-
+#include <cstdint>
+#include <memory>
 #include <shader_structs.h>
+#include <unordered_map>
+#include <vector>
+
+#include "Material.h"
+#include "SceneObject.h"
 
 namespace OM3D {
 
@@ -25,11 +31,11 @@ Span<const PointLight> Scene::point_lights() const {
     return _point_lights;
 }
 
-Camera& Scene::camera() {
+Camera &Scene::camera() {
     return _camera;
 }
 
-const Camera& Scene::camera() const {
+const Camera &Scene::camera() const {
     return _camera;
 }
 
@@ -51,28 +57,38 @@ void Scene::render() const {
     buffer.bind(BufferUsage::Uniform, 0);
 
     // Fill and bind lights buffer
-    TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(_point_lights.size(), size_t(1)));
+    TypedBuffer<shader::PointLight> light_buffer(
+        nullptr, std::max(_point_lights.size(), size_t(1)));
     {
         auto mapping = light_buffer.map(AccessType::WriteOnly);
-        for(size_t i = 0; i != _point_lights.size(); ++i) {
-            const auto& light = _point_lights[i];
-            mapping[i] = {
-                light.position(),
-                light.radius(),
-                light.color(),
-                0.0f
-            };
+        for (size_t i = 0; i != _point_lights.size(); ++i) {
+            const auto &light = _point_lights[i];
+            mapping[i] = { light.position(), light.radius(), light.color(),
+                           0.0f };
         }
     }
     light_buffer.bind(BufferUsage::Storage, 1);
 
-    // Render every object
     const Frustum frustum = _camera.build_frustum();
-    for(const SceneObject& obj : _objects) {
-        //Frustum culling
+
+    std::unordered_map<std::uintptr_t, std::vector<SceneObject>>
+        sort_obj_by_mat_map;
+    for (const SceneObject &obj : _objects) {
+        std::vector<SceneObject> vec =
+            sort_obj_by_mat_map[obj.getMaterialAddr()];
+        vec.push_back(obj);
+    }
+
+    for (const auto &vec : sort_obj_by_mat_map) {
+        for (const auto &obj : vec.second) {
+        }
+    }
+    // Render every object
+    for (const SceneObject &obj : _objects) {
+        // Frustum culling
         if (obj.ObjInFrustrum(frustum, _camera.position()))
             obj.render();
     }
 }
 
-}
+} // namespace OM3D
