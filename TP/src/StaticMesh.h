@@ -1,11 +1,13 @@
 #ifndef STATICMESH_H
 #define STATICMESH_H
 
-#include <graphics.h>
 #include <TypedBuffer.h>
 #include <Vertex.h>
-
+#include <graphics.h>
+#include <memory>
 #include <vector>
+
+#include "BoundingVolume.h"
 
 namespace OM3D {
 
@@ -15,23 +17,23 @@ struct MeshData {
 };
 
 class StaticMesh : NonCopyable {
+public:
+    StaticMesh() = default;
+    StaticMesh(StaticMesh &&) = default;
+    StaticMesh &operator=(StaticMesh &&) = default;
 
-    public:
-        StaticMesh() = default;
-        StaticMesh(StaticMesh&&) = default;
-        StaticMesh& operator=(StaticMesh&&) = default;
+    StaticMesh(const MeshData &data);
 
-        StaticMesh(const MeshData& data);
+    void draw() const;
 
-        void draw() const;
-        glm::vec3 BoundingSphereCenter;
-        float BoundingSphereRay;
+    std::shared_ptr<BoundingVolume> getBoundingVolume() const;
 
-    private:
-        TypedBuffer<Vertex> _vertex_buffer;
-        TypedBuffer<u32> _index_buffer;
+private:
+    TypedBuffer<Vertex> _vertex_buffer;
+    TypedBuffer<u32> _index_buffer;
+    std::shared_ptr<BoundingVolume> _bounding_volume;
 };
 
-}
+} // namespace OM3D
 
 #endif // STATICMESH_H
