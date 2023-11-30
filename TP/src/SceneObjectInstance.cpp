@@ -1,5 +1,6 @@
 #include "SceneObjectInstance.h"
 
+#include <cstddef>
 #include <glad/glad.h>
 
 #include "SceneObject.h"
@@ -19,18 +20,25 @@ void SceneObjectInstance::push_back(const SceneObject obj) {
 }
 
 void SceneObjectInstance::init() {
-    Span<glm::mat4> model_matrices(_model_matrices);
-    _ssbo =
-        TypedBuffer<glm::mat4>(_model_matrices.data(), _model_matrices.size());
+    _ssbo = TypedBuffer<glm::mat4>(nullptr, _model_matrices.size());
+
+    {
+        auto map = _ssbo.map(AccessType::WriteOnly);
+        for (std::size_t i = 0; i < _model_matrices.size(); i++) {
+            map[i] = _model_matrices[i];
+        }
+    }
 }
 
 void SceneObjectInstance::render() const {
     if (!_instance._material || !_instance._mesh)
         return;
 
+    _ssbo.bind(BufferUsage::Storage, 5);
+
     _instance._material->bind();
     _instance._mesh->_vertex_buffer.bind(BufferUsage::Attribute);
-    _instance._mesh->_index_buffer.bind(BufferUsage::Attribute);
+    _instance._mesh->_index_buffer.bind(BufferUsage::Index);
 
     // Vertex position
     glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), nullptr);
@@ -53,11 +61,8 @@ void SceneObjectInstance::render() const {
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
 
-    _ssbo.bind(BufferUsage::Storage, 5);
-
-    if (audit_bindings_before_draw) {
+    if (audit_bindings_before_draw)
         audit_bindings();
-    }
 
     glDrawElementsInstanced(GL_TRIANGLES,
                             int(_instance._mesh->_index_buffer.element_count()),

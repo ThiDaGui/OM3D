@@ -73,13 +73,7 @@ void Scene::render() const {
 
     const Frustum frustum = _camera.build_frustum();
 
-    SceneObjectInstance tmp{};
-    tmp.push_back(_objects[0]);
-    tmp.init();
-    tmp.render();
-
     // TODO: Mode the creation of this map outside of render
-#if 0
     std::unordered_map<std::uintptr_t, SceneObjectInstance> instances;
 
     for (const SceneObject &obj : _objects) {
@@ -93,7 +87,6 @@ void Scene::render() const {
         pair.second.init();
         pair.second.render();
     }
-#endif
 }
 
 } // namespace OM3D
