@@ -109,13 +109,34 @@ void gui(ImGuiRenderer& imgui) {
     imgui.start();
     DEFER(imgui.finish());
 
-    // ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
 
     bool open_scene_popup = false;
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
             if(ImGui::MenuItem("Open Scene")) {
                 open_scene_popup = true;
+            }
+            ImGui::EndMenu();
+        }
+
+
+        if(ImGui::BeginMenu("Debug"))
+        {
+            const char* items[] = {"none","Albedo","Normals","depth"};
+            static int item_current = 0;
+            const char* combo_preview_value = items[item_current];
+            if(ImGui::BeginCombo("Debug", combo_preview_value))
+            {
+                for(int n = 0; n < IM_ARRAYSIZE(items); n++)
+                {
+                    const bool is_selected = (item_current == n);
+                    if(ImGui::Selectable(items[n], is_selected))
+                        item_current = n;
+                    if(is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
             }
             ImGui::EndMenu();
         }
