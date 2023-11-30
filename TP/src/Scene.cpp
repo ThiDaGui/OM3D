@@ -67,8 +67,11 @@ void Scene::render() const {
     light_buffer.bind(BufferUsage::Storage, 1);
 
     // Render every object
+    const Frustum frustum = _camera.build_frustum();
     for(const SceneObject& obj : _objects) {
-        obj.render();
+        //Frustum culling
+        if (obj.ObjInFrustrum(frustum, _camera.position()))
+            obj.render();
     }
 }
 
