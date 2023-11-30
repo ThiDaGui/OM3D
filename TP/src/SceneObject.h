@@ -13,7 +13,11 @@
 
 namespace OM3D {
 
+class SceneObjectInstance;
+
 class SceneObject {
+    friend SceneObjectInstance;
+
 public:
     SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr,
                 std::shared_ptr<Material> material = nullptr);

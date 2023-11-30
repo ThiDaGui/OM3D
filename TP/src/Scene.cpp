@@ -9,6 +9,8 @@
 
 #include "Material.h"
 #include "SceneObject.h"
+#include "SceneObjectInstance.h"
+#include "StaticMesh.h"
 
 namespace OM3D {
 
@@ -71,24 +73,27 @@ void Scene::render() const {
 
     const Frustum frustum = _camera.build_frustum();
 
-    std::unordered_map<std::uintptr_t, std::vector<SceneObject>>
-        sort_obj_by_mat_map;
-    for (const SceneObject &obj : _objects) {
-        std::vector<SceneObject> vec =
-            sort_obj_by_mat_map[obj.getMaterialAddr()];
-        vec.push_back(obj);
-    }
+    SceneObjectInstance tmp{};
+    tmp.push_back(_objects[0]);
+    tmp.init();
+    tmp.render();
 
-    for (const auto &vec : sort_obj_by_mat_map) {
-        for (const auto &obj : vec.second) {
+    // TODO: Mode the creation of this map outside of render
+#if 0
+    std::unordered_map<std::uintptr_t, SceneObjectInstance> instances;
+
+    for (const SceneObject &obj : _objects) {
+        if (obj.ObjInFrustrum(frustum, _camera.position())) {
+            instances[obj.getMaterialAddr()].push_back(obj);
         }
     }
+
     // Render every object
-    for (const SceneObject &obj : _objects) {
-        // Frustum culling
-        if (obj.ObjInFrustrum(frustum, _camera.position()))
-            obj.render();
+    for (auto &pair : instances) {
+        pair.second.init();
+        pair.second.render();
     }
+#endif
 }
 
 } // namespace OM3D
