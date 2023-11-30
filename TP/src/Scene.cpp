@@ -1,8 +1,16 @@
 #include "Scene.h"
 
 #include <TypedBuffer.h>
-
+#include <cstdint>
+#include <memory>
 #include <shader_structs.h>
+#include <unordered_map>
+#include <vector>
+
+#include "Material.h"
+#include "SceneObject.h"
+#include "SceneObjectInstance.h"
+#include "StaticMesh.h"
 
 namespace OM3D {
 
@@ -25,11 +33,11 @@ Span<const PointLight> Scene::point_lights() const {
     return _point_lights;
 }
 
-Camera& Scene::camera() {
+Camera &Scene::camera() {
     return _camera;
 }
 
-const Camera& Scene::camera() const {
+const Camera &Scene::camera() const {
     return _camera;
 }
 
@@ -51,28 +59,34 @@ void Scene::render() const {
     buffer.bind(BufferUsage::Uniform, 0);
 
     // Fill and bind lights buffer
-    TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(_point_lights.size(), size_t(1)));
+    TypedBuffer<shader::PointLight> light_buffer(
+        nullptr, std::max(_point_lights.size(), size_t(1)));
     {
         auto mapping = light_buffer.map(AccessType::WriteOnly);
-        for(size_t i = 0; i != _point_lights.size(); ++i) {
-            const auto& light = _point_lights[i];
-            mapping[i] = {
-                light.position(),
-                light.radius(),
-                light.color(),
-                0.0f
-            };
+        for (size_t i = 0; i != _point_lights.size(); ++i) {
+            const auto &light = _point_lights[i];
+            mapping[i] = { light.position(), light.radius(), light.color(),
+                           0.0f };
         }
     }
     light_buffer.bind(BufferUsage::Storage, 1);
 
-    // Render every object
     const Frustum frustum = _camera.build_frustum();
-    for(const SceneObject& obj : _objects) {
-        //Frustum culling
-        if (obj.ObjInFrustrum(frustum, _camera.position()))
-            obj.render();
+
+    // TODO: Mode the creation of this map outside of render
+    std::unordered_map<std::uintptr_t, SceneObjectInstance> instances;
+
+    for (const SceneObject &obj : _objects) {
+        if (obj.ObjInFrustrum(frustum, _camera.position())) {
+            instances[obj.getMaterialAddr()].push_back(obj);
+        }
+    }
+
+    // Render every object
+    for (auto &pair : instances) {
+        pair.second.init();
+        pair.second.render();
     }
 }
 
-}
+} // namespace OM3D

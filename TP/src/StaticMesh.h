@@ -11,12 +11,16 @@
 
 namespace OM3D {
 
+class SceneObjectInstance;
+
 struct MeshData {
     std::vector<Vertex> vertices;
     std::vector<u32> indices;
 };
 
 class StaticMesh : NonCopyable {
+    friend SceneObjectInstance;
+
 public:
     StaticMesh() = default;
     StaticMesh(StaticMesh &&) = default;
