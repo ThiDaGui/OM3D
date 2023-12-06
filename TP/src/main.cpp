@@ -20,6 +20,7 @@ using namespace OM3D;
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static float exposure = 1.0;
+static int item_current = 0;
 static std::vector<std::string> scene_files;
 
 namespace OM3D {
@@ -124,7 +125,7 @@ void gui(ImGuiRenderer& imgui) {
         if(ImGui::BeginMenu("Debug"))
         {
             const char* items[] = {"none","Albedo","Normals","depth"};
-            static int item_current = 0;
+            
             const char* combo_preview_value = items[item_current];
             if(ImGui::BeginCombo("Debug", combo_preview_value))
             {
