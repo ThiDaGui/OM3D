@@ -32,5 +32,5 @@ void main()
     out_albedo *= texture(in_texture, in_uv);
 #endif
 
-    out_normal = vec4(normal * 2.0 - 1.0, 0.0);
+    out_normal = vec4(normal * 0.5 + 0.5, 1.0);
 }
