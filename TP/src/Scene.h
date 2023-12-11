@@ -7,6 +7,9 @@
 #include <memory>
 #include <vector>
 
+#include "TypedBuffer.h"
+#include "shader_structs.h"
+
 namespace OM3D {
 
 class Scene : NonMovable {
@@ -16,6 +19,7 @@ public:
     static Result<std::unique_ptr<Scene>>
     from_gltf(const std::string &file_name);
 
+    void update();
     void render() const;
 
     void add_object(SceneObject obj);
@@ -37,6 +41,9 @@ private:
     glm::vec3 _sun_color = glm::vec3(1.0f);
 
     Camera _camera;
+
+    TypedBuffer<shader::FrameData> _frame_data_buffer;
+    TypedBuffer<shader::PointLight> _light_buffer;
 };
 
 } // namespace OM3D

@@ -290,10 +290,10 @@ struct RendererState {
     Texture g_buffer_albedo;
     Texture g_buffer_normal;
 
-    Texture debug_texture;
+    Texture defered_texture;
 
     Framebuffer g_buffer_framebuffer;
-    Framebuffer debug_framebuffer;
+    Framebuffer defered_framebuffer;
 
     static RendererState create(glm::uvec2 size) {
         RendererState state;
@@ -303,14 +303,14 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.g_buffer_albedo = Texture(size, ImageFormat::RGBA8_sRGB);
             state.g_buffer_normal = Texture(size, ImageFormat::RGBA8_UNORM);
-            state.debug_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.defered_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.g_buffer_framebuffer = Framebuffer(
                 &state.depth_texture,
                 std::array{ &state.g_buffer_albedo, &state.g_buffer_normal });
 
-            state.debug_framebuffer =
-                Framebuffer(nullptr, std::array{ &state.debug_texture });
+            state.defered_framebuffer =
+                Framebuffer(nullptr, std::array{ &state.defered_texture });
         }
 
         return state;
@@ -348,6 +348,8 @@ int main(int argc, char **argv) {
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
     auto g_buffer_debug_program =
         Program::from_files("debug.frag", "screen.vert");
+    auto defered_sun_program =
+        Program::from_files("defered_sun.frag", "screen.vert");
 
     RendererState renderer;
 
@@ -401,15 +403,24 @@ int main(int argc, char **argv) {
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
             glDrawArrays(GL_TRIANGLES, 0, 3);
-            // Blit tonemap result to screen
+            // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            renderer.debug_framebuffer.blit();
+            renderer.defered_framebuffer.blit();
         }
 
-        // Blit tonemap result to screen
+        // deferred rendering
         else {
+            renderer.defered_framebuffer.bind();
+            defered_sun_program->bind();
+            renderer.g_buffer_albedo.bind(0);
+            renderer.g_buffer_normal.bind(1);
+            renderer.depth_texture.bind(2);
+
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            // Blit result to screen
+
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            renderer.g_buffer_framebuffer.blit();
+            renderer.defered_framebuffer.blit();
         }
 
         gui(imgui);
