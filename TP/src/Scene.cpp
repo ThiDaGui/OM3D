@@ -27,6 +27,20 @@ void Scene::add_object(SceneObject obj) {
 
 void Scene::add_light(PointLight obj) {
     _point_lights.emplace_back(std::move(obj));
+
+    _light_buffer = TypedBuffer<shader::PointLight>(
+        nullptr, std::max(_point_lights.size(), size_t(1)));
+
+    {
+        auto mapping = _light_buffer.map(AccessType::WriteOnly);
+        for (size_t i = 0; i != _point_lights.size(); ++i) {
+            const auto &light = _point_lights[i];
+            mapping[i] = { light.position(), light.radius(), light.color(),
+                           0.0f };
+        }
+    }
+
+    _light_buffer.bind(BufferUsage::Storage, 1);
 }
 
 Span<const SceneObject> Scene::objects() const {
@@ -51,6 +65,8 @@ void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
 }
 
 void Scene::update() {
+    _frame_data_buffer = TypedBuffer<shader::FrameData>(nullptr, 1);
+
     {
         auto mapping = _frame_data_buffer.map(AccessType::WriteOnly);
         mapping[0].camera.view_proj = _camera.view_proj_matrix();
@@ -58,20 +74,8 @@ void Scene::update() {
         mapping[0].sun_color = _sun_color;
         mapping[0].sun_dir = glm::normalize(_sun_direction);
     }
-    _light_buffer = TypedBuffer<shader::PointLight>(
-        nullptr, std::max(_point_lights.size(), size_t(1)));
-    {
-        auto mapping = _light_buffer.map(AccessType::WriteOnly);
-        for (size_t i = 0; i != _point_lights.size(); ++i) {
-            const auto &light = _point_lights[i];
-            mapping[i] = { light.position(), light.radius(), light.color(),
-                           0.0f };
-        }
-    }
 
     _frame_data_buffer.bind(BufferUsage::Uniform, 0);
-
-    _light_buffer.bind(BufferUsage::Storage, 1);
 }
 
 void Scene::render() const {
