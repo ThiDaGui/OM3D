@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "Framebuffer.h"
+#include "Texture.h"
 #include "TypedBuffer.h"
 #include "shader_structs.h"
 
@@ -21,6 +23,7 @@ public:
 
     void update();
     void render() const;
+    void deferred(Texture *albedo, Texture *normal, Texture *depth) const;
 
     void add_object(SceneObject obj);
     void add_light(PointLight obj);

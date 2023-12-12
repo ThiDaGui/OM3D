@@ -290,10 +290,10 @@ struct RendererState {
     Texture g_buffer_albedo;
     Texture g_buffer_normal;
 
-    Texture defered_texture;
+    Texture deferred_texture;
 
     Framebuffer g_buffer_framebuffer;
-    Framebuffer defered_framebuffer;
+    Framebuffer deferred_framebuffer;
 
     static RendererState create(glm::uvec2 size) {
         RendererState state;
@@ -303,14 +303,14 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.g_buffer_albedo = Texture(size, ImageFormat::RGBA8_sRGB);
             state.g_buffer_normal = Texture(size, ImageFormat::RGBA8_UNORM);
-            state.defered_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.deferred_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.g_buffer_framebuffer = Framebuffer(
                 &state.depth_texture,
                 std::array{ &state.g_buffer_albedo, &state.g_buffer_normal });
 
-            state.defered_framebuffer =
-                Framebuffer(nullptr, std::array{ &state.defered_texture });
+            state.deferred_framebuffer =
+                Framebuffer(nullptr, std::array{ &state.deferred_texture });
         }
 
         return state;
@@ -377,6 +377,8 @@ int main(int argc, char **argv) {
             process_inputs(window, scene->camera());
         }
 
+        { scene->update(); }
+
         // Render the scene
         {
             renderer.g_buffer_framebuffer.bind();
@@ -396,7 +398,7 @@ int main(int argc, char **argv) {
 
         // debug view
         if (item_current != 0) {
-            renderer.debug_framebuffer.bind();
+            renderer.deferred_framebuffer.bind();
             g_buffer_debug_program->bind();
             g_buffer_debug_program->set_uniform(HASH("to_debug"), item_current);
             renderer.g_buffer_albedo.bind(0);
@@ -405,12 +407,12 @@ int main(int argc, char **argv) {
             glDrawArrays(GL_TRIANGLES, 0, 3);
             // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            renderer.defered_framebuffer.blit();
+            renderer.deferred_framebuffer.blit();
         }
 
         // deferred rendering
         else {
-            renderer.defered_framebuffer.bind();
+            renderer.deferred_framebuffer.bind();
             defered_sun_program->bind();
             renderer.g_buffer_albedo.bind(0);
             renderer.g_buffer_normal.bind(1);
@@ -420,7 +422,7 @@ int main(int argc, char **argv) {
             // Blit result to screen
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            renderer.defered_framebuffer.blit();
+            renderer.deferred_framebuffer.blit();
         }
 
         gui(imgui);

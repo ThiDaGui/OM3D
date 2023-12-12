@@ -1,6 +1,8 @@
 #include "Scene.h"
 
 #include <TypedBuffer.h>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <shader_structs.h>
@@ -15,7 +17,7 @@
 namespace OM3D {
 
 Scene::Scene()
-    : _frame_data_buffer(nullptr, 1)
+    : _frame_data_buffer(nullptr, size_t(1))
     , _light_buffer(nullptr, size_t(1)) {
 }
 
@@ -56,6 +58,8 @@ void Scene::update() {
         mapping[0].sun_color = _sun_color;
         mapping[0].sun_dir = glm::normalize(_sun_direction);
     }
+    _light_buffer = TypedBuffer<shader::PointLight>(
+        nullptr, std::max(_point_lights.size(), size_t(1)));
     {
         auto mapping = _light_buffer.map(AccessType::WriteOnly);
         for (size_t i = 0; i != _point_lights.size(); ++i) {
@@ -64,14 +68,13 @@ void Scene::update() {
                            0.0f };
         }
     }
+
+    _frame_data_buffer.bind(BufferUsage::Uniform, 0);
+
+    _light_buffer.bind(BufferUsage::Storage, 1);
 }
 
 void Scene::render() const {
-    _frame_data_buffer.bind(BufferUsage::Uniform, 0);
-
-    // Fill and bind lights buffer
-    _light_buffer.bind(BufferUsage::Storage, 1);
-
     const Frustum frustum = _camera.build_frustum();
 
     // TODO: Mode the creation of this map outside of render
