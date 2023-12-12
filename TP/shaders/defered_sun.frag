@@ -28,6 +28,10 @@ void main() {
 	vec3 albedo = texelFetch(in_albedo, coord, 0).rgb;
 	float depth = texelFetch(in_depth, coord, 0).r;
 
+	mat4 inv_viewproj = inverse(frame.camera.view_proj);
+
+	vec3 world_pos = unproject(in_uv, depth, inv_viewproj);
+
     vec3 hdr = frame.sun_color * max(0.0, dot(frame.sun_dir, normal));
 
 	hdr *= albedo;
