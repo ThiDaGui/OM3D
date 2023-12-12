@@ -2,38 +2,37 @@
 #define FRAMEBUFFER_H
 
 #include <Texture.h>
-
 #include <array>
 
 namespace OM3D {
 
 class Framebuffer : NonCopyable {
-    public:
-        template<size_t N>
-        Framebuffer(Texture* depth, std::array<Texture*, N> colors) : Framebuffer(depth, colors.data(), colors.size()) {
-        }
+public:
+    template <size_t N>
+    Framebuffer(Texture *depth, std::array<Texture *, N> colors)
+        : Framebuffer(depth, colors.data(), colors.size()) {
+    }
 
+    Framebuffer();
+    Framebuffer(Texture *depth);
 
-        Framebuffer();
-        Framebuffer(Texture* depth);
+    Framebuffer(Framebuffer &&) = default;
+    Framebuffer &operator=(Framebuffer &&) = default;
 
-        Framebuffer(Framebuffer&&) = default;
-        Framebuffer& operator=(Framebuffer&&) = default;
+    ~Framebuffer();
 
-        ~Framebuffer();
+    void bind(bool clear = true) const;
+    void blit(bool depth = false) const;
 
-        void bind(bool clear = true) const;
-        void blit(bool depth = false) const;
+    const glm::uvec2 &size() const;
 
-        const glm::uvec2& size() const;
+private:
+    Framebuffer(Texture *depth, Texture **colors, size_t count);
 
-    private:
-        Framebuffer(Texture* depth, Texture** colors, size_t count);
-
-        GLHandle _handle;
-        glm::uvec2 _size = {};
+    GLHandle _handle;
+    glm::uvec2 _size = {};
 };
 
-}
+} // namespace OM3D
 
 #endif // FRAMEBUFFER_H
