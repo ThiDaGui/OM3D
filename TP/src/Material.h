@@ -52,6 +52,8 @@ namespace OM3D
         static std::shared_ptr<Material> empty_material();
         static Material textured_material();
         static Material textured_normal_mapped_material();
+        //PointLight
+        static Material point_light_material();
 
     private:
         std::shared_ptr<Program> _program;

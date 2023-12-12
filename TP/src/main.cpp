@@ -236,19 +236,21 @@ std::unique_ptr<Scene> create_default_scene() {
 
     // Add lights
     {
-        PointLight light;
+        PointLight light(std::string(data_path) + "sphere.glb");
         light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
         light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
         light.set_radius(100.0f);
-        scene->add_light(std::move(light));
+        light.set_transform(glm::translate(glm::mat4(1.0f), light.position()));
+        scene->add_object(std::move(light));
     }
     {
-        PointLight light;
+        PointLight light(std::string(data_path) + "sphere.glb");
         light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
         light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
         light.set_radius(50.0f);
-        scene->add_light(std::move(light));
-    }
+        light.set_transform(glm::translate(glm::mat4(1.0f), light.position()));
+        scene->add_object(std::move(light));
+        }
 
     return scene;
 }

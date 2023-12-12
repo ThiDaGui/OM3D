@@ -2,16 +2,17 @@
 #define POINTLIGHT_H
 
 #include <utils.h>
+#include <SceneObject.h>
 
 #include <glm/vec3.hpp>
 
 namespace OM3D {
 
-class PointLight {
+class PointLight : public SceneObject {
 
     public:
         PointLight() = default;
-
+        PointLight(std::string path) : SceneObject(path) {}
         void set_position(const glm::vec3& pos) {
             _position = pos;
         }

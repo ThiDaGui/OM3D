@@ -138,4 +138,11 @@ namespace OM3D
         return material;
     }
 
+    Material Material::point_light_material()
+    {
+        Material material;
+        material._program = Program::from_files("defered_light.frag", "basic.vert");
+        return material;
+    }
+
 } // namespace OM3D

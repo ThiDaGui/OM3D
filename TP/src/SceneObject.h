@@ -21,6 +21,7 @@ class SceneObject {
 public:
     SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr,
                 std::shared_ptr<Material> material = nullptr);
+    SceneObject(std::string path);
 
     void render() const;
 
