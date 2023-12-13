@@ -123,6 +123,8 @@ Material Material::textured_normal_mapped_material() {
 Material Material::point_light_material() {
     Material material;
     material._program = Program::from_files("defered_light.frag", "basic.vert");
+    material.set_cull_mode(CullMode::Front);
+    material.set_depth_test_mode(DepthTestMode::Reversed);
     return material;
 }
 
