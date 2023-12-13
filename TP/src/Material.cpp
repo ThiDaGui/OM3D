@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <glad/glad.h>
+#include <memory>
 
 namespace OM3D {
 
@@ -98,7 +99,8 @@ std::shared_ptr<Material> Material::empty_material() {
     if (!material) {
         material = std::make_shared<Material>();
         // material->_program = Program::from_files("lit.frag", "basic.vert");
-        material->_program = Program::from_files("g_buffer.frag", "basic.vert");
+        material->_program =
+            Program::from_files("g_buffer.frag", "instanced.vert");
         weak_material = material;
     }
     return material;
@@ -108,14 +110,14 @@ Material Material::textured_material() {
     Material material;
     material._program =
         // Program::from_files("lit.frag", "basic.vert", { "TEXTURED" });
-        Program::from_files("g_buffer.frag", "basic.vert", { "TEXTURED" });
+        Program::from_files("g_buffer.frag", "instanced.vert", { "TEXTURED" });
     return material;
 }
 
 Material Material::textured_normal_mapped_material() {
     Material material;
     material._program = Program::from_files(
-        /*"lit.frag", "basic.vert"*/ "g_buffer.frag", "basic.vert",
+        /*"lit.frag", "basic.vert"*/ "g_buffer.frag", "instanced.vert",
         std::array<std::string, 2>{ "TEXTURED", "NORMAL_MAPPED" });
     return material;
 }
@@ -123,8 +125,8 @@ Material Material::textured_normal_mapped_material() {
 Material Material::point_light_material() {
     Material material;
     material._program = Program::from_files("defered_light.frag", "basic.vert");
-    material.set_cull_mode(CullMode::Front);
-    material.set_depth_test_mode(DepthTestMode::Reversed);
+    // material.set_cull_mode(CullMode::Front);
+    // material.set_depth_test_mode(DepthTestMode::Reversed);
     return material;
 }
 
