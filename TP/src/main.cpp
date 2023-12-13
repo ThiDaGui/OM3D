@@ -242,9 +242,7 @@ std::unique_ptr<Scene> create_default_scene() {
         light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
         light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
         light.set_radius(100.0f);
-        light.set_transform(glm::translate(
-            glm::scale(glm::mat4(1.0f), glm::vec3(light.radius())),
-            light.position()));
+        light.set_transform(glm::mat4(1.0));
         scene->add_light(std::move(light));
     }
     {
@@ -252,9 +250,7 @@ std::unique_ptr<Scene> create_default_scene() {
         light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
         light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
         light.set_radius(50.0f);
-        light.set_transform(glm::translate(
-            glm::scale(glm::mat4(1.0f), glm::vec3(light.radius())),
-            light.position()));
+        light.set_transform(glm::mat4(1.0));
         scene->add_light(std::move(light));
     }
 
@@ -319,7 +315,6 @@ int main(int argc, char **argv) {
     glfwSwapInterval(1); // Enable vsync
     init_graphics();
 
-    PointLight::generate_statics(16, 8);
     ImGuiRenderer imgui(window);
 
     scene = create_default_scene();
@@ -361,7 +356,7 @@ int main(int argc, char **argv) {
         // Render the scene
         {
             renderer.g_buffer_framebuffer.bind();
-            scene->render();
+            scene->deferred(nullptr);
         }
 
 #if 0
@@ -392,12 +387,13 @@ int main(int argc, char **argv) {
         // deferred rendering
         else {
             renderer.deferred_framebuffer.bind();
-            defered_sun_program->bind();
+            // defered_sun_program->bind();
             renderer.g_buffer_albedo.bind(0);
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
 
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            // glDrawArrays(GL_TRIANGLES, 0, 3);
+            scene->deferred(defered_sun_program);
             // Blit result to screen
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
