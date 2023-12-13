@@ -49,14 +49,8 @@ public:
         return _radius;
     }
 
-private:
-    glm::vec3 _position = {};
-    glm::vec3 _color = glm::vec3(1.0f);
-    float _radius = 10.0f;
-
-    static std::shared_ptr<StaticMesh>
-    generate_light_sphere(const std::size_t h_segments = 64,
-                          const size_t v_segments = 64) {
+    static void generate_statics(const std::size_t h_segments = 64,
+                                 const size_t v_segments = 64) {
         const size_t vertex_count = (h_segments + 1) * (v_segments + 1);
         MeshData mesh_data = { std::vector<Vertex>(vertex_count),
                                std::vector<u32>() };
@@ -92,13 +86,18 @@ private:
                 }
             }
         }
-        return std::make_shared<StaticMesh>(mesh_data);
+        light_sphere = std::make_shared<StaticMesh>(mesh_data);
+        light_matrial =
+            std::make_shared<Material>(Material::point_light_material());
     }
 
-    inline static std::shared_ptr<StaticMesh> light_sphere =
-        generate_light_sphere(16, 8);
-    inline static std::shared_ptr<Material> light_matrial =
-        std::make_shared<Material>(Material::point_light_material());
+private:
+    glm::vec3 _position = {};
+    glm::vec3 _color = glm::vec3(1.0f);
+    float _radius = 10.0f;
+
+    inline static std::shared_ptr<StaticMesh> light_sphere = nullptr;
+    inline static std::shared_ptr<Material> light_matrial = nullptr;
 };
 
 } // namespace OM3D

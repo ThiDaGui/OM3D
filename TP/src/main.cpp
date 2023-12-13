@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 
 #include "ImageFormat.h"
+#include "PointLight.h"
 #include "Program.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_uint2.hpp"
@@ -318,6 +319,7 @@ int main(int argc, char **argv) {
     glfwSwapInterval(1); // Enable vsync
     init_graphics();
 
+    PointLight::generate_statics(16, 8);
     ImGuiRenderer imgui(window);
 
     scene = create_default_scene();
