@@ -1,18 +1,22 @@
 #include "Scene.h"
 
-#include <TypedBuffer.h>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <glad/glad.h>
 #include <memory>
-#include <shader_structs.h>
 #include <unordered_map>
 #include <vector>
 
 #include "Material.h"
+#include "PointLight.h"
+#include "Program.h"
 #include "SceneObject.h"
 #include "SceneObjectInstance.h"
 #include "StaticMesh.h"
+#include "Texture.h"
+#include "TypedBuffer.h"
+#include "shader_structs.h"
 
 namespace OM3D {
 
@@ -94,6 +98,15 @@ void Scene::render() const {
     for (auto &pair : instances) {
         pair.second.init();
         pair.second.render();
+    }
+}
+
+void Scene::deferred(std::shared_ptr<Program> deffered_sun_program) const {
+    // deffered_sun_program->bind();
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    for (const auto &light : _point_lights) {
+        light.render();
     }
 }
 

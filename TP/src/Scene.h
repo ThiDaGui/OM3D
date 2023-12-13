@@ -2,12 +2,13 @@
 #define SCENE_H
 
 #include <Camera.h>
-#include <PointLight.h>
 #include <SceneObject.h>
 #include <memory>
 #include <vector>
 
 #include "Framebuffer.h"
+#include "PointLight.h"
+#include "Program.h"
 #include "Texture.h"
 #include "TypedBuffer.h"
 #include "shader_structs.h"
@@ -23,7 +24,7 @@ public:
 
     void update();
     void render() const;
-    void deferred(Texture *albedo, Texture *normal, Texture *depth) const;
+    void deferred(std::shared_ptr<Program> deffered_sun_program) const;
 
     void add_object(SceneObject obj);
     void add_light(PointLight obj);
