@@ -5,7 +5,6 @@
 
 #include "SceneObject.h"
 #include "TypedBuffer.h"
-#include "glm/ext/matrix_float4x4.hpp"
 #include "graphics.h"
 #include "utils.h"
 

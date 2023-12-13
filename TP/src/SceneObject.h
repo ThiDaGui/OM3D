@@ -17,6 +17,7 @@ class SceneObjectInstance;
 
 class SceneObject {
     friend SceneObjectInstance;
+    friend std::shared_ptr<StaticMesh> load_sphere();
 
 public:
     SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr,
