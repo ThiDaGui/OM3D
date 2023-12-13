@@ -21,7 +21,7 @@ public:
 
     ~Framebuffer();
 
-    void bind(bool clear = true) const;
+    void bind(bool clear = true, bool depth = true) const;
     void blit(bool depth = false) const;
 
     const glm::uvec2 &size() const;

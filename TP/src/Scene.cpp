@@ -102,12 +102,16 @@ void Scene::render() const {
 }
 
 void Scene::deferred(std::shared_ptr<Program> deffered_sun_program) const {
-    // deffered_sun_program->bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    deffered_sun_program->bind();
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glEnable(GL_DEPTH_TEST);
 
     for (const auto &light : _point_lights) {
         light.render();
     }
+    glDepthMask(GL_TRUE);
 }
 
 } // namespace OM3D

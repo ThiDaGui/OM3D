@@ -24,8 +24,8 @@ float luminance(vec3 rgb) {
     return dot(rgb, vec3(0.2126, 0.7152, 0.0722));
 }
 
-float attenuation(float distance, float radius) {
-    const float x = min(distance, radius);
+float attenuation(float dist, float radius) {
+    const float x = min(dist, radius);
     return sqr(1.0 - sqr(sqr(x / radius))) / (sqr(x) + 1.0);
 }
 

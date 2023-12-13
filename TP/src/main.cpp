@@ -6,6 +6,7 @@
 #include "Program.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_uint2.hpp"
+#include "glm/gtx/transform.hpp"
 #include "utils.h"
 
 #define GLFW_INCLUDE_NONE
@@ -234,23 +235,29 @@ std::unique_ptr<Scene> create_default_scene() {
     ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
     scene = std::move(result.value);
 
-    scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(1.0f));
+    scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(0.0f));
 
     // Add lights
     {
         PointLight light;
-        light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
-        light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
+        light.set_position(glm::vec3(1.0f, 2.0f, 40.0f));
+        light.set_color(glm::vec3(0.0f, 255.0f, 0.0f));
         light.set_radius(100.0f);
-        light.set_transform(glm::mat4(1.0));
+        light.set_transform(
+            glm::translate(light.position())
+            * glm::scale(
+                glm::vec3{ light.radius(), light.radius(), light.radius() }));
         scene->add_light(std::move(light));
     }
     {
         PointLight light;
-        light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
+        light.set_position(glm::vec3(1.0f, 2.0f, -40.0f));
         light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
         light.set_radius(50.0f);
-        light.set_transform(glm::mat4(1.0));
+        light.set_transform(
+            glm::translate(light.position())
+            * glm::scale(
+                glm::vec3{ light.radius(), light.radius(), light.radius() }));
         scene->add_light(std::move(light));
     }
 
@@ -283,8 +290,8 @@ struct RendererState {
                 &state.depth_texture,
                 std::array{ &state.g_buffer_albedo, &state.g_buffer_normal });
 
-            state.deferred_framebuffer =
-                Framebuffer(nullptr, std::array{ &state.deferred_texture });
+            state.deferred_framebuffer = Framebuffer(
+                &state.depth_texture, std::array{ &state.deferred_texture });
         }
 
         return state;
@@ -356,7 +363,7 @@ int main(int argc, char **argv) {
         // Render the scene
         {
             renderer.g_buffer_framebuffer.bind();
-            scene->deferred(nullptr);
+            scene->render();
         }
 
 #if 0
@@ -386,16 +393,14 @@ int main(int argc, char **argv) {
 
         // deferred rendering
         else {
-            renderer.deferred_framebuffer.bind();
-            // defered_sun_program->bind();
+            renderer.deferred_framebuffer.bind(true, false);
             renderer.g_buffer_albedo.bind(0);
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
 
-            // glDrawArrays(GL_TRIANGLES, 0, 3);
             scene->deferred(defered_sun_program);
-            // Blit result to screen
 
+            // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             renderer.deferred_framebuffer.blit();
         }

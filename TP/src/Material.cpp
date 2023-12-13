@@ -46,6 +46,11 @@ void Material::bind() const {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         break;
+
+    case BlendMode::Additive:
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+        break;
     }
 
     switch (_depth_test_mode) {
@@ -124,9 +129,11 @@ Material Material::textured_normal_mapped_material() {
 
 Material Material::point_light_material() {
     Material material;
-    material._program = Program::from_files("defered_light.frag", "basic.vert");
-    // material.set_cull_mode(CullMode::Front);
-    // material.set_depth_test_mode(DepthTestMode::Reversed);
+    material._program =
+        Program::from_files("defered_light.frag", "defered_light.vert");
+    material.set_cull_mode(CullMode::Front);
+    material.set_depth_test_mode(DepthTestMode::Reversed);
+    material.set_blend_mode(BlendMode::Additive);
     return material;
 }
 

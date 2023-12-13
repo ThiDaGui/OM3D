@@ -32,7 +32,7 @@ public:
 
     std::uintptr_t getMaterialAddr() const;
 
-private:
+protected:
     glm::mat4 _transform = glm::mat4(1.0f);
 
     std::shared_ptr<StaticMesh> _mesh;

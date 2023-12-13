@@ -32,4 +32,16 @@ const glm::vec3 &PointLight::color() const {
 float PointLight::radius() const {
     return _radius;
 }
+void PointLight::render() const {
+    if (!_material || !_mesh) {
+        return;
+    }
+
+    _material->set_uniform(HASH("model"), transform());
+    _material->set_uniform(HASH("lightRadius"), radius());
+    _material->set_uniform(HASH("lightPos"), position());
+    _material->set_uniform(HASH("lightColor"), color());
+    _material->bind();
+    _mesh->draw();
+}
 } // namespace OM3D

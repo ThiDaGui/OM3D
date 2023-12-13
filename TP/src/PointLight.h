@@ -31,6 +31,8 @@ public:
 
     void set_radius(float radius);
 
+    void render() const;
+
     const glm::vec3 &position() const;
 
     const glm::vec3 &color() const;

@@ -11,6 +11,7 @@ namespace OM3D {
 enum class BlendMode {
     None,
     Alpha,
+    Additive,
 };
 
 enum class DepthTestMode { Standard, Reversed, Equal, None };
