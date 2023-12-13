@@ -14,18 +14,18 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh,
     : _mesh(std::move(mesh))
     , _material(std::move(material)) {
 }
-SceneObject::SceneObject(std::string path)
-{
+
+SceneObject::SceneObject(std::string path) {
     auto object_scene = std::make_unique<Scene>();
     auto result = Scene::from_gltf(path);
     ALWAYS_ASSERT(result.is_ok, "Unable to load sphere.glb");
     object_scene = std::move(result.value);
     auto objects = object_scene->objects();
-    
+
     ALWAYS_ASSERT(objects.size() == 1, "object scene should have one object");
     *this = objects[0];
-    
 }
+
 void SceneObject::render() const {
     if (!_material || !_mesh) {
         return;

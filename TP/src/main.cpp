@@ -3,6 +3,7 @@
 
 #include "ImageFormat.h"
 #include "Program.h"
+#include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_uint2.hpp"
 #include "utils.h"
 
@@ -236,54 +237,28 @@ std::unique_ptr<Scene> create_default_scene() {
 
     // Add lights
     {
-        PointLight light(std::string(data_path) + "sphere.glb");
+        PointLight light;
         light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
         light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
         light.set_radius(100.0f);
-        light.set_transform(glm::translate(glm::mat4(1.0f), light.position()));
-        scene->add_object(std::move(light));
+        light.set_transform(glm::translate(
+            glm::scale(glm::mat4(1.0f), glm::vec3(light.radius())),
+            light.position()));
+        scene->add_light(std::move(light));
     }
     {
-        PointLight light(std::string(data_path) + "sphere.glb");
+        PointLight light;
         light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
         light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
         light.set_radius(50.0f);
-        light.set_transform(glm::translate(glm::mat4(1.0f), light.position()));
-        scene->add_object(std::move(light));
-        }
+        light.set_transform(glm::translate(
+            glm::scale(glm::mat4(1.0f), glm::vec3(light.radius())),
+            light.position()));
+        scene->add_light(std::move(light));
+    }
 
     return scene;
 }
-
-#if 0
-struct RendererState {
-    static RendererState create(glm::uvec2 size) {
-        RendererState state;
-
-        state.size = size;
-
-        if(state.size.x > 0 && state.size.y > 0) {
-            state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
-            state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
-            state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
-            state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
-            state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
-        }
-
-        return state;
-    }
-
-    glm::uvec2 size = {};
-
-    Texture depth_texture;
-    Texture lit_hdr_texture;
-    Texture tone_mapped_texture;
-
-    Framebuffer main_framebuffer;
-    Framebuffer tone_map_framebuffer;
-};
-
-#endif
 
 struct RendererState {
     glm::uvec2 size = {};
