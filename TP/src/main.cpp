@@ -375,6 +375,14 @@ int main(int argc, char **argv) {
             process_inputs(window, scene->camera());
         }
 
+        //Shadow mapping
+        {
+            glCullFace(GL_BACK);
+            for(uint i = 0; i != frame.point_light_count; ++i) {
+
+            }
+        }
+
         // Render the scene
         {
             renderer.g_buffer_framebuffer.bind();
