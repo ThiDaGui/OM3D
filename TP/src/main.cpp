@@ -345,6 +345,7 @@ int main(int argc, char **argv) {
 
     scene = create_default_scene();
 
+    auto shadowmap_program = Program::from_files("shadow_map.frag", "shadow_map.vert");
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
     auto g_buffer_debug_program =
         Program::from_files("debug.frag", "screen.vert");
@@ -376,9 +377,19 @@ int main(int argc, char **argv) {
         }
 
         //Shadow mapping
+        bool Do_shadow_mapping = true;
+        if (Do_shadow_mapping)
         {
+            auto size = glm::uvec2{1024, 1024};
+            auto depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
+
+            Framebuffer depthMapFBO = Framebuffer(
+                &depth_texture);
+
+            shadowmap_program->bind();
             glCullFace(GL_BACK);
-            for(uint i = 0; i != frame.point_light_count; ++i) {
+            for(uint i = 0; i != scene->point_light_count(); ++i) {
+                //shadowmap_program->set_uniform();
 
             }
         }
@@ -389,7 +400,7 @@ int main(int argc, char **argv) {
             scene->render();
         }
 
-#if 0
+#if 1
         // Apply a tonemap in compute shader
         {
             renderer.tone_map_framebuffer.bind();
@@ -399,7 +410,6 @@ int main(int argc, char **argv) {
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 #endif
-
         // debug view
         if (item_current != 0) {
             renderer.debug_framebuffer.bind();
@@ -419,7 +429,6 @@ int main(int argc, char **argv) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             renderer.g_buffer_framebuffer.blit();
         }
-
         gui(imgui);
 
         glfwSwapBuffers(window);

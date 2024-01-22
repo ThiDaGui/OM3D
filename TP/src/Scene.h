@@ -29,6 +29,11 @@ public:
 
     void set_sun(glm::vec3 direction, glm::vec3 color = glm::vec3(1.0f));
 
+    uint point_light_count()
+    {
+        return _point_lights.size();
+    }
+
 private:
     std::vector<SceneObject> _objects;
     std::vector<PointLight> _point_lights;

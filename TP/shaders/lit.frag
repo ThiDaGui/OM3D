@@ -17,6 +17,7 @@ layout(location = 5) in vec3 in_bitangent;
 
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
+layout(binding = 2) uniform sampler2D sun_shadow_texture;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -38,6 +39,7 @@ void main() {
     const vec3 normal = in_normal;
 #endif
 
+    
     vec3 acc = frame.sun_color * max(0.0, dot(frame.sun_dir, normal)) + ambient;
 
     for(uint i = 0; i != frame.point_light_count; ++i) {

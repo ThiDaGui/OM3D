@@ -17,5 +17,6 @@ struct PointLight {
     float radius;
     vec3 color;
     float padding_1;
+    //samplerCube shadow_texture;
 };
 
