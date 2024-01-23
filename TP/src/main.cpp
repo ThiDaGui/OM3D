@@ -403,6 +403,8 @@ int main(int argc, char **argv) {
 
             scene->deferred(defered_sun_program);
 
+            scene->render_transparent();
+
             // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             renderer.deferred_framebuffer.blit();

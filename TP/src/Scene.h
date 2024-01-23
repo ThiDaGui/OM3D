@@ -24,6 +24,7 @@ public:
 
     void update();
     void render() const;
+    void render_transparent() const;
     void deferred(std::shared_ptr<Program> deffered_sun_program) const;
 
     void add_object(SceneObject obj);

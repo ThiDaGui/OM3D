@@ -51,7 +51,6 @@ void main() {
         if(NoL <= 0.0 || att <= 0.0f) {
             continue;
         }
-
         acc += light.color * (NoL * att);
     }
 

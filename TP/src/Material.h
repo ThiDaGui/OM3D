@@ -43,7 +43,9 @@ public:
 
     static std::shared_ptr<Material> empty_material();
     static Material textured_material();
+    static Material textured_transparent_material();
     static Material textured_normal_mapped_material();
+    static Material textured_normal_mapped_transparent_material();
     // PointLight
     static Material point_light_material();
 

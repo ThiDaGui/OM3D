@@ -33,6 +33,10 @@ public:
     std::uintptr_t getMaterialAddr() const;
     std::uintptr_t getMeshAddr() const;
 
+    bool is_transparent() const {
+        return _material->alpha_mode() != AlphaMode::Opaque;
+    }
+
 protected:
     glm::mat4 _transform = glm::mat4(1.0f);
 
