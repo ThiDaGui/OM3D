@@ -95,22 +95,9 @@ void Scene::update() {
 void Scene::render() const {
     const Frustum frustum = _camera.build_frustum();
 
-    // TODO: Mode the creation of this map outside of render
-    std::unordered_map<std::uintptr_t,
-                       std::unordered_map<std::uintptr_t, SceneObjectInstance>>
-        instances;
-
     for (const SceneObject &obj : _objects) {
         if (obj.ObjInFrustrum(frustum, _camera.position())) {
-            instances[obj.getMaterialAddr()][obj.getMeshAddr()].push_back(obj);
-        }
-    }
-
-    // Render every object
-    for (auto &pair_ : instances) {
-        for (auto &pair : pair_.second) {
-            pair.second.init();
-            pair.second.render();
+            obj.render();
         }
     }
 }
