@@ -329,6 +329,7 @@ int main(int argc, char **argv) {
         Program::from_files("debug.frag", "screen.vert");
     auto defered_sun_program =
         Program::from_files("defered_sun.frag", "screen.vert");
+    auto tiled_deferred_program = Program::from_file("tiled_deferred.comp");
 
     RendererState renderer;
 
