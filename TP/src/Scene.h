@@ -37,6 +37,9 @@ public:
 
     void set_sun(glm::vec3 direction, glm::vec3 color = glm::vec3(1.0f));
 
+    float get_falloff() const;
+    void set_falloff(const float falloff);
+
 private:
     std::vector<SceneObject> _objects;
     std::vector<PointLight> _point_lights;
@@ -48,6 +51,8 @@ private:
 
     TypedBuffer<shader::FrameData> _frame_data_buffer;
     TypedBuffer<shader::PointLight> _light_buffer;
+
+    float _falloff = 1.0f;
 };
 
 } // namespace OM3D

@@ -26,6 +26,7 @@ using namespace OM3D;
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static float exposure = 1.0;
+static float light_falloff = 1.0;
 static u32 item_current = 0;
 static std::vector<std::string> scene_files;
 
@@ -149,11 +150,16 @@ void gui(ImGuiRenderer &imgui) {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Exposure")) {
+        if (ImGui::BeginMenu("Render")) {
             ImGui::DragFloat("Exposure", &exposure, 0.25f, 0.01f, 100.0f,
                              "%.2f", ImGuiSliderFlags_Logarithmic);
             if (exposure != 1.0f && ImGui::Button("Reset")) {
                 exposure = 1.0f;
+            }
+            ImGui::DragFloat("Light Falloff", &light_falloff, 0.001f, 0.0f,
+                             1.0f, "%.2f", 0);
+            if (light_falloff != 1.0f && ImGui::Button("Reset")) {
+                light_falloff = 1.0f;
             }
             ImGui::EndMenu();
         }
@@ -235,18 +241,14 @@ std::unique_ptr<Scene> create_default_scene() {
     ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
     scene = std::move(result.value);
 
-    scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(0.0f));
+    scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(0.1f));
 
     // Add lights
     {
         PointLight light;
-        light.set_position(glm::vec3(1.0f, 2.0f, 40.0f));
-        light.set_color(glm::vec3(0.0f, 255.0f, 0.0f));
+        light.set_position(glm::vec3(0.0f, 20.0f, 60.0f));
+        light.set_color(glm::vec3(255.0f, 100.0f, 0.0f));
         light.set_radius(100.0f);
-        light.set_transform(
-            glm::translate(light.position())
-            * glm::scale(
-                glm::vec3{ light.radius(), light.radius(), light.radius() }));
         scene->add_light(std::move(light));
     }
     {
@@ -254,10 +256,6 @@ std::unique_ptr<Scene> create_default_scene() {
         light.set_position(glm::vec3(1.0f, 2.0f, -40.0f));
         light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
         light.set_radius(50.0f);
-        light.set_transform(
-            glm::translate(light.position())
-            * glm::scale(
-                glm::vec3{ light.radius(), light.radius(), light.radius() }));
         scene->add_light(std::move(light));
     }
 
@@ -358,7 +356,10 @@ int main(int argc, char **argv) {
             process_inputs(window, scene->camera());
         }
 
-        { scene->update(); }
+        {
+            scene->set_falloff(light_falloff);
+            scene->update();
+        }
 
         // Render the scene
         {
@@ -379,13 +380,15 @@ int main(int argc, char **argv) {
 
         // debug view
         if (item_current != 0) {
-            renderer.deferred_framebuffer.bind();
+            renderer.deferred_framebuffer.bind(true, false);
             g_buffer_debug_program->bind();
             g_buffer_debug_program->set_uniform(HASH("to_debug"), item_current);
             renderer.g_buffer_albedo.bind(0);
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
+            glDisable(GL_DEPTH_TEST);
             glDrawArrays(GL_TRIANGLES, 0, 3);
+            glEnable(GL_DEPTH_TEST);
             // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             renderer.deferred_framebuffer.blit();

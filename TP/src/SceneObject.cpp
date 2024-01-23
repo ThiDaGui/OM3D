@@ -65,4 +65,8 @@ std::uintptr_t SceneObject::getMaterialAddr() const {
     return reinterpret_cast<std::uintptr_t>(_material.get());
 }
 
+std::uintptr_t SceneObject::getMeshAddr() const {
+    return reinterpret_cast<std::uintptr_t>(_mesh.get());
+}
+
 } // namespace OM3D

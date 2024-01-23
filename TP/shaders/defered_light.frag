@@ -39,7 +39,10 @@ void main() {
 	const vec3 light_vec = to_light / dist;
 
 	const float NoL = clamp(dot(light_vec, normal), 0.0, 1.0);
-	const float att = attenuation(dist, lightRadius);
+	const float att = attenuation(dist, lightRadius, frame.falloff);
 
-	out_color = vec4(lightColor * lightRadius / max(pow(dist, 2), 0.001) * NoL, 1.0);
+	const vec4 tmp = frame.camera.view_proj * vec4(worldSpacePos, 1.0);
+	const vec3 tmp3 = tmp.xyz / tmp.w;
+
+	out_color = vec4(att * NoL * lightColor * albedo, 1.0);
 }

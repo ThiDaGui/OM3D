@@ -1,6 +1,7 @@
 #include "PointLight.h"
 
 #include "LoadSphere.h"
+#include "glm/ext/matrix_transform.hpp"
 
 namespace OM3D {
 PointLight::PointLight()
@@ -11,6 +12,8 @@ PointLight::PointLight()
 
 void PointLight::set_position(const glm::vec3 &pos) {
     _position = pos;
+    _transform = glm::scale(glm::translate(glm::mat4(1.0), _position),
+                            glm::vec3(_radius));
 }
 
 void PointLight::set_color(const glm::vec3 &color) {
@@ -19,6 +22,8 @@ void PointLight::set_color(const glm::vec3 &color) {
 
 void PointLight::set_radius(float radius) {
     _radius = radius;
+    _transform = glm::scale(glm::translate(glm::mat4(1.0), _position),
+                            glm::vec3(_radius));
 }
 
 const glm::vec3 &PointLight::position() const {

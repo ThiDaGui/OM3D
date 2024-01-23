@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "Material.h"
@@ -68,6 +69,14 @@ void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
     _sun_color = color;
 }
 
+float Scene::get_falloff() const {
+    return _falloff;
+}
+
+void Scene::set_falloff(const float falloff) {
+    _falloff = falloff;
+}
+
 void Scene::update() {
     _frame_data_buffer = TypedBuffer<shader::FrameData>(nullptr, 1);
 
@@ -77,6 +86,7 @@ void Scene::update() {
         mapping[0].point_light_count = u32(_point_lights.size());
         mapping[0].sun_color = _sun_color;
         mapping[0].sun_dir = glm::normalize(_sun_direction);
+        mapping[0].falloff = _falloff;
     }
 
     _frame_data_buffer.bind(BufferUsage::Uniform, 0);
@@ -86,18 +96,22 @@ void Scene::render() const {
     const Frustum frustum = _camera.build_frustum();
 
     // TODO: Mode the creation of this map outside of render
-    std::unordered_map<std::uintptr_t, SceneObjectInstance> instances;
+    std::unordered_map<std::uintptr_t,
+                       std::unordered_map<std::uintptr_t, SceneObjectInstance>>
+        instances;
 
     for (const SceneObject &obj : _objects) {
         if (obj.ObjInFrustrum(frustum, _camera.position())) {
-            instances[obj.getMaterialAddr()].push_back(obj);
+            instances[obj.getMaterialAddr()][obj.getMeshAddr()].push_back(obj);
         }
     }
 
     // Render every object
-    for (auto &pair : instances) {
-        pair.second.init();
-        pair.second.render();
+    for (auto &pair_ : instances) {
+        for (auto &pair : pair_.second) {
+            pair.second.init();
+            pair.second.render();
+        }
     }
 }
 

@@ -31,6 +31,7 @@ public:
     bool ObjInFrustrum(Frustum frustum, glm::vec3 cam_pos) const;
 
     std::uintptr_t getMaterialAddr() const;
+    std::uintptr_t getMeshAddr() const;
 
 protected:
     glm::mat4 _transform = glm::mat4(1.0f);
