@@ -14,7 +14,7 @@
 
 namespace OM3D {
 
-bool display_gltf_loading_warnings = false;
+bool display_gltf_loading_warnings = true;
 
 static size_t component_count(int type) {
     switch(type) {
@@ -390,6 +390,7 @@ Result<std::unique_ptr<Scene>> Scene::from_gltf(const std::string& file_name) {
                 if(!mat) {
                     const auto& albedo_info = gltf.materials[prim.material].pbrMetallicRoughness.baseColorTexture;
                     const auto& normal_info = gltf.materials[prim.material].normalTexture;
+                    const auto& alpha_info = gltf.materials[prim.material].alphaMode;
 
                     auto load_texture = [&](auto texture_info, bool as_sRGB) -> std::shared_ptr<Texture> {
                         if(texture_info.texCoord != 0) {
@@ -428,6 +429,7 @@ Result<std::unique_ptr<Scene>> Scene::from_gltf(const std::string& file_name) {
                         mat->set_texture(0u, albedo);
                         mat->set_texture(1u, normal);
                     }
+                    mat->set_alpha_mode(alpha_info);
                 }
 
                 material = mat;

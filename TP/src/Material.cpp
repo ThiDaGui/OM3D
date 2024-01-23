@@ -25,6 +25,16 @@ void Material::set_cull_mode(CullMode cull) {
     _cull_mode = cull;
 }
 
+void Material::set_alpha_mode(std::string mode) {
+    if (mode == "OPAQUE") {
+        _alpha_mode = AlphaMode::Opaque;
+    } else if (mode == "MASK") {
+        _alpha_mode = AlphaMode::Mask; //should not be happens in our case
+    } else if (mode == "BLEND") {
+        _alpha_mode = AlphaMode::Blend;
+    }
+}
+
 void Material::set_texture(u32 slot, std::shared_ptr<Texture> tex) {
     if (const auto it =
             std::find_if(_textures.begin(), _textures.end(),

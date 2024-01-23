@@ -13,6 +13,7 @@ enum class BlendMode {
     Alpha,
     Additive,
 };
+enum class AlphaMode { Opaque, Mask, Blend };
 
 enum class DepthTestMode { Standard, Reversed, Equal, None };
 
@@ -30,6 +31,7 @@ public:
     void set_blend_mode(BlendMode blend);
     void set_depth_test_mode(DepthTestMode depth);
     void set_cull_mode(CullMode cull);
+    void set_alpha_mode(std::string mode);
     void set_texture(u32 slot, std::shared_ptr<Texture> tex);
 
     template <typename... Args>
@@ -52,6 +54,7 @@ private:
     BlendMode _blend_mode = BlendMode::None;
     DepthTestMode _depth_test_mode = DepthTestMode::Standard;
     CullMode _cull_mode = CullMode::Back;
+    AlphaMode _alpha_mode = AlphaMode::Opaque;
 };
 
 } // namespace OM3D
