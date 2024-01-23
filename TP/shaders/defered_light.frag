@@ -4,8 +4,6 @@
 
 layout (location = 0) out vec4 out_color;
 
-layout(location = 6) in vec3 in_clip_position;
-
 layout(binding = 0) uniform sampler2D in_albedo;
 layout(binding = 1) uniform sampler2D in_normal;
 layout(binding = 2) uniform sampler2D in_depth;
@@ -33,7 +31,8 @@ void main() {
 
 	mat4 inv_viewproj = inverse(frame.camera.view_proj);
 
-	vec3 worldSpacePos = unproject(in_clip_position.xy, depth, inv_viewproj);
+	const vec2 uv = gl_FragCoord.xy /textureSize(in_depth, 0).xy;
+	vec3 worldSpacePos = unproject(uv * 2.0 - vec2(1.0), depth, inv_viewproj);
 	float dist = distance(worldSpacePos, lightPos);
 	const vec3 to_light = (lightPos - worldSpacePos);
 	const vec3 light_vec = to_light / dist;

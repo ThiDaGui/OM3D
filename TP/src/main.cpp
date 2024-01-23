@@ -282,7 +282,7 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.g_buffer_albedo = Texture(size, ImageFormat::RGBA8_sRGB);
             state.g_buffer_normal = Texture(size, ImageFormat::RGBA8_UNORM);
-            state.deferred_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.deferred_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
 
             state.g_buffer_framebuffer = Framebuffer(
                 &state.depth_texture,

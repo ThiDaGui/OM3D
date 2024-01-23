@@ -14,7 +14,6 @@ layout(location = 2) out vec3 out_color;
 layout(location = 3) out vec3 out_position;
 layout(location = 4) out vec3 out_tangent;
 layout(location = 5) out vec3 out_bitangent;
-layout(location = 6) out vec3 out_clip_position;
 
 
 layout(binding = 0) uniform Data {
@@ -34,7 +33,5 @@ void main() {
     out_color = in_color;
     out_position = position.xyz;
 
-	vec4 clip_position = frame.camera.view_proj * position;
-	out_clip_position = vec3(clip_position / clip_position.w);
-	gl_Position = clip_position;
+	gl_Position = frame.camera.view_proj * position;
 }
