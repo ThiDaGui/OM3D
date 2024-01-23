@@ -391,7 +391,7 @@ Result<std::unique_ptr<Scene>> Scene::from_gltf(const std::string& file_name) {
                     const auto& albedo_info = gltf.materials[prim.material].pbrMetallicRoughness.baseColorTexture;
                     const auto& normal_info = gltf.materials[prim.material].normalTexture;
                     const auto& alpha_info = gltf.materials[prim.material].alphaMode;
-
+                    std::cout << "alpha_info: " << alpha_info << " for material name: " << gltf.materials[prim.material].name << "with index: " << prim.material << std::endl;
                     auto load_texture = [&](auto texture_info, bool as_sRGB) -> std::shared_ptr<Texture> {
                         if(texture_info.texCoord != 0) {
                             std::cerr << "Unsupported texture coordinate channel (" << texture_info.texCoord << ")" << std::endl;
@@ -430,6 +430,13 @@ Result<std::unique_ptr<Scene>> Scene::from_gltf(const std::string& file_name) {
                         mat->set_texture(1u, normal);
                     }
                     mat->set_alpha_mode(alpha_info);
+                    if(alpha_info == "MASK") {
+                        mat->set_blend_mode(BlendMode::Alpha);
+                    } else if(alpha_info == "BLEND") {
+                        mat->set_blend_mode(BlendMode::Alpha);
+                    } else {
+                        mat->set_blend_mode(BlendMode::None);
+                    }
                 }
 
                 material = mat;
@@ -457,6 +464,38 @@ Result<std::unique_ptr<Scene>> Scene::from_gltf(const std::string& file_name) {
         }
         scene->add_light(light);
     }
+
+    //print info about the scene we just loaded
+    std::cout << "Scene info:" << std::endl;
+    std::cout << "    " << scene->objects().size() << " objects" << std::endl;
+    std::cout << "    " << scene->point_lights().size() << " point lights" << std::endl;
+    std::cout << "    " << textures.size() << " textures" << std::endl;
+    for(auto [id, texture] : textures) {
+        std::cout << "        " << id << ": " << texture->size().x << "x" << texture->size().y << std::endl;
+    }
+    for(auto [id, material] : materials) {
+        auto blend_mode = material->blend_mode();
+        if(blend_mode == BlendMode::None) {
+            std::cout << "        " << id << ": " << "BlendMode::None" << std::endl;
+        } else if(blend_mode == BlendMode::Alpha) {
+            std::cout << "        " << id << ": " << "BlendMode::Alpha" << std::endl;
+        } else if(blend_mode == BlendMode::Additive) {
+            std::cout << "        " << id << ": " << "BlendMode::Additive" << std::endl;
+        } else {
+            std::cout << "        " << id << ": " << "BlendMode::Unknown" << std::endl;
+        }
+        auto alpha_mode = material->alpha_mode();
+        if(alpha_mode == AlphaMode::Opaque) {
+            std::cout << "        " << id << ": " << "AlphaMode::Opaque" << std::endl;
+        } else if(alpha_mode == AlphaMode::Mask) {
+            std::cout << "        " << id << ": " << "AlphaMode::Mask" << std::endl;
+        } else if(alpha_mode == AlphaMode::Blend) {
+            std::cout << "        " << id << ": " << "AlphaMode::Blend" << std::endl;
+        } else {
+            std::cout << "        " << id << ": " << "AlphaMode::Unknown" << std::endl;
+        }
+    }
+
 
 
     return {true, std::move(scene)};

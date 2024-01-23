@@ -47,6 +47,11 @@ public:
     // PointLight
     static Material point_light_material();
 
+    BlendMode blend_mode() const { return _blend_mode; }
+    DepthTestMode depth_test_mode() const { return _depth_test_mode; }
+    CullMode cull_mode() const { return _cull_mode; }
+    AlphaMode alpha_mode() const { return _alpha_mode; }
+
 private:
     std::shared_ptr<Program> _program;
     std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;

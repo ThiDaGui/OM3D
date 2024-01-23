@@ -95,10 +95,21 @@ void Scene::update() {
 void Scene::render() const {
     const Frustum frustum = _camera.build_frustum();
 
+    //sort objects by distance to camera for transparency
+    auto cmp = [&](const SceneObject &a, const SceneObject &b) {
+        glm::vec3 a_pos = a.transform()[3];
+        glm::vec3 b_pos = b.transform()[3];
+        return glm::length(a_pos - _camera.position()) >
+               glm::length(b_pos - _camera.position());
+    };
+    std::vector<SceneObject> _objects = this->_objects;
+    std::sort(_objects.begin(), _objects.end(), cmp);
+
     // TODO: Mode the creation of this map outside of render
     std::unordered_map<std::uintptr_t,
                        std::unordered_map<std::uintptr_t, SceneObjectInstance>>
         instances;
+    //sort objects by distance to camera for transparency*
 
     for (const SceneObject &obj : _objects) {
         if (obj.ObjInFrustrum(frustum, _camera.position())) {
