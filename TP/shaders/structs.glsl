@@ -10,6 +10,8 @@ struct FrameData {
 
     vec3 sun_color;
     float padding_1;
+
+    CameraData light_proj;
 };
 
 struct PointLight {

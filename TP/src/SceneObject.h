@@ -32,6 +32,8 @@ public:
 
     std::uintptr_t getMaterialAddr() const;
 
+    void draw_mesh_shadow(std::shared_ptr<Program> shadow_map_program) const;
+
 protected:
     glm::mat4 _transform = glm::mat4(1.0f);
 

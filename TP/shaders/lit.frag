@@ -30,10 +30,11 @@ const vec3 ambient = vec3(0.0);
 
 void main() {
 #ifdef NORMAL_MAPPED
-    const vec3 normal_map = unpack_normal_map(texture(in_normal_texture, in_uv).xy);
+    /*const vec3 normal_map = unpack_normal_map(texture(in_normal_texture, in_uv).xy);
     const vec3 normal = normal_map.x * in_tangent +
                         normal_map.y * in_bitangent +
-                        normal_map.z * in_normal;
+                        normal_map.z * in_normal;*/
+    const vec3 normal = in_normal;
 #else
     const vec3 normal = in_normal;
 #endif
@@ -58,11 +59,11 @@ void main() {
     out_color = vec4(in_color * acc, 1.0);
 
 #ifdef TEXTURED
-    out_color *= texture(in_texture, in_uv);
+    //out_color *= texture(in_texture, in_uv);
 #endif
 
 #ifdef DEBUG_NORMAL
-    out_color = vec4(normal * 0.5 + 0.5, 1.0);
+    //out_color = vec4(normal * 0.5 + 0.5, 1.0);
 #endif
 }
 

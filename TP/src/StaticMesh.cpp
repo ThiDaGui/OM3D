@@ -63,6 +63,17 @@ void StaticMesh::draw() const {
                    GL_UNSIGNED_INT, nullptr);
 }
 
+void StaticMesh::draw_shadow() const {
+    _vertex_buffer.bind(BufferUsage::Attribute);
+    _index_buffer.bind(BufferUsage::Index);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glDrawElements(GL_TRIANGLES, int(_index_buffer.element_count()),
+                   GL_UNSIGNED_INT, nullptr);
+}
+
 std::shared_ptr<BoundingVolume> StaticMesh::getBoundingVolume() const {
     return _bounding_volume;
 }

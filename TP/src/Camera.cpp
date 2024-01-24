@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <iostream>
 
 namespace OM3D {
 

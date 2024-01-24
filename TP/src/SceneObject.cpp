@@ -36,6 +36,13 @@ void SceneObject::render() const {
     _mesh->draw();
 }
 
+void SceneObject::draw_mesh_shadow(std::shared_ptr<Program> shadow_map_program) const {
+    shadow_map_program->set_uniform(HASH("model"), transform());
+    _material->bind();
+    shadow_map_program->bind();
+    _mesh->draw_shadow();
+}
+
 bool IsInPlane(glm::vec3 normal, glm::vec3 pos, float ray) {
     return (glm::dot(normal, pos) + ray) > 0;
 }

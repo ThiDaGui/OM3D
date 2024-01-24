@@ -9,17 +9,37 @@ layout(location = 0) in vec2 in_uv;
 layout(binding = 0) uniform sampler2D in_albedo;
 layout(binding = 1) uniform sampler2D in_normal;
 layout(binding = 2) uniform sampler2D in_depth;
+layout(binding = 3) uniform sampler2D shadow_map;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
 };
 
+uniform mat4 lightSpaceMatrix;
 
 vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
 	const vec3 ndc = vec3(uv * 2.0 - vec2(1.0), depth);
 	const vec4 p = inv_viewproj * vec4(ndc, 1.0);
 	return p.xyz / p.w;
 }
+
+//from https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadow_map, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    return closestDepth;
+}
+
 
 void main() {
     const ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -32,9 +52,16 @@ void main() {
 
 	vec3 world_pos = unproject(in_uv, depth, inv_viewproj);
 
-    vec3 hdr = frame.sun_color * max(0.0, dot(frame.sun_dir, normal));
+    //Shadow
+    vec4 sun_space_pos = lightSpaceMatrix * vec4(world_pos, 1.0f);
+    float shadow_lvl = ShadowCalculation(sun_space_pos);
+    //
+
+    vec3 hdr = frame.sun_color * max(0.0, dot(normalize(frame.sun_dir), normal));
 
 	hdr *= albedo;
 
-    out_color = vec4(hdr, 1.0);
+    vec3 ambiant = vec3(0.02) * albedo;
+    //out_color = vec4(hdr*shadow_lvl + ambiant, 1.0);
+    out_color = vec4(vec3(shadow_lvl), 1.0);
 }

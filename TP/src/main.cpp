@@ -134,7 +134,7 @@ void gui(ImGuiRenderer &imgui) {
         }
 
         if (ImGui::BeginMenu("Debug")) {
-            const char *items[] = { "none", "Albedo", "Normals", "depth" };
+            const char *items[] = { "none", "Albedo", "Normals", "depth", "shadow_map_sun" };
             const char *combo_preview_value = items[item_current];
             if (ImGui::BeginCombo("Debug", combo_preview_value)) {
                 for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
@@ -235,14 +235,14 @@ std::unique_ptr<Scene> create_default_scene() {
     ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
     scene = std::move(result.value);
 
-    scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(0.0f));
+    scene->set_sun(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f));
 
     // Add lights
     {
         PointLight light;
         light.set_position(glm::vec3(1.0f, 2.0f, 40.0f));
-        light.set_color(glm::vec3(0.0f, 255.0f, 0.0f));
-        light.set_radius(100.0f);
+        light.set_color(glm::vec3(00.0f, 0.0f, 00.0f));//light color
+        light.set_radius(10.0f);
         light.set_transform(
             glm::translate(light.position())
             * glm::scale(
@@ -270,21 +270,30 @@ struct RendererState {
     Texture depth_texture;
     Texture g_buffer_albedo;
     Texture g_buffer_normal;
+    Texture sun_shadow_texture;
+    Texture sun_shadow_texture_rgb;
+
+    //Texture shadow_map;
 
     Texture deferred_texture;
 
     Framebuffer g_buffer_framebuffer;
     Framebuffer deferred_framebuffer;
+    Framebuffer sun_shadow_framebuffer;
 
     static RendererState create(glm::uvec2 size) {
         RendererState state;
         state.size = size;
+        glm::uvec2 shadow_size = {1024, 1024};
 
         if (state.size.x > 0 && state.size.y > 0) {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.g_buffer_albedo = Texture(size, ImageFormat::RGBA8_sRGB);
             state.g_buffer_normal = Texture(size, ImageFormat::RGBA8_UNORM);
             state.deferred_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.sun_shadow_texture = Texture(shadow_size, ImageFormat::Depth32_FLOAT);
+            state.sun_shadow_texture_rgb = Texture(shadow_size, ImageFormat::RGBA16_FLOAT);
+            //state.sun_shadow_texture_test = Texture(shadow_size, ImageFormat::Depth32_FLOAT);
 
             state.g_buffer_framebuffer = Framebuffer(
                 &state.depth_texture,
@@ -292,6 +301,9 @@ struct RendererState {
 
             state.deferred_framebuffer = Framebuffer(
                 &state.depth_texture, std::array{ &state.deferred_texture });
+
+            state.sun_shadow_framebuffer = Framebuffer(
+                nullptr, std::array{ &state.sun_shadow_texture_rgb });
         }
 
         return state;
@@ -327,6 +339,7 @@ int main(int argc, char **argv) {
     scene = create_default_scene();
 
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
+    auto shadowmap_program = Program::from_files("shadow_map.frag", "shadow_map.vert");
     auto g_buffer_debug_program =
         Program::from_files("debug.frag", "screen.vert");
     auto defered_sun_program =
@@ -360,6 +373,22 @@ int main(int argc, char **argv) {
 
         { scene->update(); }
 
+        //shadow mapping
+        {
+            //glCullFace(GL_FRONT);
+            renderer.sun_shadow_framebuffer.bind();
+            //glEnable(GL_DEPTH_TEST);
+            //glDepthFunc(GL_LEQUAL);
+            //shadowmap_program->bind();
+            //glDrawBuffer(GL_NONE);
+            //glReadBuffer(GL_NONE);
+            scene->shadow_mapping(shadowmap_program);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            //renderer.sun_shadow_framebuffer.blit();
+
+            //glCullFace(GL_BACK);
+        }
+
         // Render the scene
         {
             renderer.g_buffer_framebuffer.bind();
@@ -376,7 +405,6 @@ int main(int argc, char **argv) {
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 #endif
-
         // debug view
         if (item_current != 0) {
             renderer.deferred_framebuffer.bind();
@@ -385,6 +413,7 @@ int main(int argc, char **argv) {
             renderer.g_buffer_albedo.bind(0);
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
+            renderer.sun_shadow_texture_rgb.bind(3);
             glDrawArrays(GL_TRIANGLES, 0, 3);
             // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -397,6 +426,7 @@ int main(int argc, char **argv) {
             renderer.g_buffer_albedo.bind(0);
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
+            renderer.sun_shadow_texture_rgb.bind(3);
 
             scene->deferred(defered_sun_program);
 
@@ -404,7 +434,7 @@ int main(int argc, char **argv) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             renderer.deferred_framebuffer.blit();
         }
-
+        //renderer.sun_shadow_framebuffer.blit();
         gui(imgui);
 
         glfwSwapBuffers(window);

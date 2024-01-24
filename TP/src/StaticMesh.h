@@ -29,6 +29,7 @@ public:
     StaticMesh(const MeshData &data);
 
     void draw() const;
+    void draw_shadow() const;
 
     std::shared_ptr<BoundingVolume> getBoundingVolume() const;
 
