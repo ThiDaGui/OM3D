@@ -71,13 +71,11 @@ bool is_inside(PointLight light, AABB boundingBox) {
 void cull_point_lights() {
 	const vec2 min_uv = vec2(gl_WorkGroupID.xy) / vec2(gl_NumWorkGroups.xy);
 	const vec2 max_uv = (vec2(gl_WorkGroupID.xy) + vec2(1.0)) / vec2(gl_NumWorkGroups.xy);
-	const mat4 inv_view = inverse(frame.camera.view);
+	const mat4 inv_proj = inverse(frame.camera.proj);
 
 	AABB boundingBox;
-	boundingBox.minPoint = unproject(min_uv, uintBitsToFloat(tile_dist_bounds.x), inv_view);
-	boundingBox.maxPoint = unproject(max_uv, uintBitsToFloat(tile_dist_bounds.y), inv_view);
-
-	imageStore(debug, pixel_coord, vec4(boundingBox.minPoint, 1.0));
+	boundingBox.minPoint = unproject(min_uv, uintBitsToFloat(tile_dist_bounds.x), inv_proj);
+	boundingBox.maxPoint = unproject(max_uv, uintBitsToFloat(tile_dist_bounds.y), inv_proj);
 
 	for (uint i = 0; i != frame.point_light_count; i++) {
 		const PointLight light = point_lights[i];
@@ -127,7 +125,6 @@ void main() {
 	if (!(pixel_coord.x < size.x && pixel_coord.y < size.y))
 		return;
 
-	/*
 	// color
 	vec3 acc = frame.sun_color * max(0.0, dot(frame.sun_dir, normal));
 	for (uint i = 0; i != nb_point_lights; i++) {
@@ -148,6 +145,4 @@ void main() {
 	}
 
 	imageStore(out_color, pixel_coord, vec4(acc * albedo, 1.0));
-	*/
-	imageStore(out_color, pixel_coord, vec4(vec3(nb_point_lights), 1.0));
 }
