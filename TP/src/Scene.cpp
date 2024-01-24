@@ -79,12 +79,10 @@ void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
     glm::vec3 sun_pos = -100.f * direction;
     glm::vec3 sun_target = glm::vec3(0.0);//sun_pos + _sun_direction;
     glm::mat4 lightViewMatrix = glm::lookAt(sun_pos, sun_target, glm::vec3(0.0f, 1.0f, 0.0f));*/
-    glm::mat4 lightProjection = Camera::perspective(to_rad(60.0f), 16.0f / 9.0f, 0.001f);
+    glm::mat4 lightProjection = Camera::perspective(to_rad(100.0f), 16.0f / 9.0f, 0.001f);
     glm::mat4 lightViewMatrix = 
-        glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::lookAt(glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     _sunLightSpaceMatrix = lightProjection * lightViewMatrix;
-    _sunLightSpaceMatrix = _camera.view_proj_matrix();
-    std::cout << "sun " << _sunLightSpaceMatrix[0][0] << "\n";
 }
 
 void Scene::update() {
@@ -99,6 +97,10 @@ void Scene::update() {
         mapping[0].light_proj.view_proj = get_sunLightSpaceMatrix();
     }
 
+    glm::mat4 lightProjection = Camera::perspective(to_rad(100.0f), 16.0f / 9.0f, 0.001f);
+    glm::mat4 lightViewMatrix = 
+        glm::lookAt(glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    _sunLightSpaceMatrix = lightProjection * lightViewMatrix;
     _frame_data_buffer.bind(BufferUsage::Uniform, 0);
 }
 
@@ -155,7 +157,6 @@ void Scene::shadow_mapping(std::shared_ptr<Program> shadow_map_program) const {
     //shadow_map_program->set_uniform(HASH("lightSpaceMatrix"), _sunLightSpaceMatrix);
     for (const SceneObject &obj : _objects)
     {
-        std::cout << get_sunLightSpaceMatrix()[3][3] << " ??? \n";
         shadow_map_program->set_uniform(HASH("lightSpaceMatrix"), get_sunLightSpaceMatrix());
         obj.draw_mesh_shadow(shadow_map_program);
     }

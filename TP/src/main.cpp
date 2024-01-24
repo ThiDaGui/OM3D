@@ -235,14 +235,14 @@ std::unique_ptr<Scene> create_default_scene() {
     ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
     scene = std::move(result.value);
 
-    scene->set_sun(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f));
+    scene->set_sun(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f));
 
     // Add lights
     {
         PointLight light;
         light.set_position(glm::vec3(1.0f, 2.0f, 40.0f));
-        light.set_color(glm::vec3(00.0f, 0.0f, 00.0f));//light color
-        light.set_radius(10.0f);
+        light.set_color(glm::vec3(100.0f, 0.0f, 100.0f));//light color
+        light.set_radius(0.0f);
         light.set_transform(
             glm::translate(light.position())
             * glm::scale(
@@ -293,7 +293,6 @@ struct RendererState {
             state.deferred_texture = Texture(size, ImageFormat::RGBA8_UNORM);
             state.sun_shadow_texture = Texture(shadow_size, ImageFormat::Depth32_FLOAT);
             state.sun_shadow_texture_rgb = Texture(shadow_size, ImageFormat::RGBA16_FLOAT);
-            //state.sun_shadow_texture_test = Texture(shadow_size, ImageFormat::Depth32_FLOAT);
 
             state.g_buffer_framebuffer = Framebuffer(
                 &state.depth_texture,
@@ -375,10 +374,10 @@ int main(int argc, char **argv) {
 
         //shadow mapping
         {
-            //glCullFace(GL_FRONT);
-            renderer.sun_shadow_framebuffer.bind();
-            //glEnable(GL_DEPTH_TEST);
-            //glDepthFunc(GL_LEQUAL);
+            glCullFace(GL_FRONT);
+            renderer.sun_shadow_framebuffer.bind(true, true);
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LEQUAL);
             //shadowmap_program->bind();
             //glDrawBuffer(GL_NONE);
             //glReadBuffer(GL_NONE);
@@ -386,7 +385,7 @@ int main(int argc, char **argv) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             //renderer.sun_shadow_framebuffer.blit();
 
-            //glCullFace(GL_BACK);
+            glCullFace(GL_BACK);
         }
 
         // Render the scene

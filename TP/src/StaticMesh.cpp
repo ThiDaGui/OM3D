@@ -64,6 +64,9 @@ void StaticMesh::draw() const {
 }
 
 void StaticMesh::draw_shadow() const {
+    //glCullFace(GL_FRONT);
+    //glEnable(GL_DEPTH_TEST);
+    //glDepthFunc(GL_GEQUAL);
     _vertex_buffer.bind(BufferUsage::Attribute);
     _index_buffer.bind(BufferUsage::Index);
 

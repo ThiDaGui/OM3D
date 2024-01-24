@@ -26,18 +26,13 @@ vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
 //from https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
-    // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    projCoords.xy = projCoords.xy * 0.5 + 0.5;
     float closestDepth = texture(shadow_map, projCoords.xy).r;
-    // get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
-    // check whether current frag pos is in shadow
+    float currentDepth = projCoords.z * 10000.0f;
     float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
 
-    return closestDepth;
+    return shadow;
 }
 
 
@@ -57,11 +52,11 @@ void main() {
     float shadow_lvl = ShadowCalculation(sun_space_pos);
     //
 
-    vec3 hdr = frame.sun_color * max(0.0, dot(normalize(frame.sun_dir), normal));
+    vec3 hdr = frame.sun_color * max(0.0, dot(normalize(-frame.sun_dir), normal));
 
 	hdr *= albedo;
 
     vec3 ambiant = vec3(0.02) * albedo;
-    //out_color = vec4(hdr*shadow_lvl + ambiant, 1.0);
-    out_color = vec4(vec3(shadow_lvl), 1.0);
+    out_color = vec4(hdr * (shadow_lvl), 1.0);
+    //out_color = vec4(vec3(shadow_lvl), 1.0);
 }
