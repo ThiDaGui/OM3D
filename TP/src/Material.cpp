@@ -127,6 +127,7 @@ namespace OM3D
         {
             texture.second->bind(texture.first);
         }
+        _program->set_uniform("alpha_cutoff", (float)alpha_cutoff);
         _program->bind();
     }
 
@@ -154,28 +155,44 @@ namespace OM3D
         return material;
     }
 
-    Material Material::textured_transparent_material()
-    {
-        Material material;
-        material._program =
-        Program::from_files("lit.frag", "instanced.vert", std::array<std::string, 2>{"TEXTURED", "TRANSPARENT"});
-        return material;
-    }
-
-    Material Material::textured_normal_mapped_transparent_material()
-    {
-        Material material;
-        material._program = Program::from_files("lit.frag", "instanced.vert", std::array<std::string, 3>{"TEXTURED", "NORMAL_MAPPED", "TRANSPARENT"});
-        material.set_blend_mode(BlendMode::Alpha);
-        return material;
-    }
-
     Material Material::textured_normal_mapped_material()
     {
         Material material;
         material._program = Program::from_files(
             /*"lit.frag", "basic.vert"*/ "g_buffer.frag", "instanced.vert",
             std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+        return material;
+    }
+
+    Material Material::textured_transparent_material()
+    {
+        Material material;
+        material._program =
+            Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 2>{"TEXTURED", "TRANSPARENT"});
+        return material;
+    }
+
+    Material Material::textured_normal_mapped_transparent_material()
+    {
+        Material material;
+        material._program = Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 3>{"TEXTURED", "NORMAL_MAPPED", "TRANSPARENT"});
+        material.set_blend_mode(BlendMode::Alpha);
+        return material;
+    }
+
+    Material Material::textured_masked_material(double alpha_cutoff)
+    {
+        Material material;
+        material._program = Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 2>{"TEXTURED", "MASKED"});
+        material.alpha_cutoff = alpha_cutoff;
+        return material;
+    }
+
+    Material Material::textured_normal_mapped_masked_material(double alpha_cutoff)
+    {
+        Material material;
+        material._program = Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 3>{"TEXTURED", "NORMAL_MAPPED", "MASKED"});
+        material.alpha_cutoff = alpha_cutoff;
         return material;
     }
 

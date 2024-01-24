@@ -473,6 +473,7 @@ namespace OM3D
                         const auto &albedo_info = gltf.materials[prim.material].pbrMetallicRoughness.baseColorTexture;
                         const auto &normal_info = gltf.materials[prim.material].normalTexture;
                         const auto &alpha_info = gltf.materials[prim.material].alphaMode;
+                        const auto &alpha_cutoff = gltf.materials[prim.material].alphaCutoff;
                         std::cout << "alpha_info: " << alpha_info << " for material name: " << gltf.materials[prim.material].name << "with index: " << prim.material << std::endl;
                         auto load_texture = [&](auto texture_info, bool as_sRGB) -> std::shared_ptr<Texture>
                         {
@@ -515,6 +516,8 @@ namespace OM3D
                         {
                             if (alpha_info == "BLEND")
                                 mat = std::make_shared<Material>(Material::textured_transparent_material());
+                            else if (alpha_info == "MASK")
+                                mat = std::make_shared<Material>(Material::textured_masked_material(alpha_cutoff));
                             else
                                 mat = std::make_shared<Material>(Material::textured_material());
                             mat->set_texture(0u, albedo);
@@ -523,14 +526,18 @@ namespace OM3D
                         {
                             if (alpha_info == "BLEND")
                                 mat = std::make_shared<Material>(Material::textured_normal_mapped_transparent_material());
+                            else if (alpha_info == "MASK")
+                                mat = std::make_shared<Material>(Material::textured_normal_mapped_masked_material(alpha_cutoff));
                             else
                                 mat = std::make_shared<Material>(Material::textured_normal_mapped_material());
                             mat->set_texture(0u, albedo);
                             mat->set_texture(1u, normal);
                         }
                         mat->set_alpha_mode(alpha_info);
-                        if(alpha_info == "BLEND")
+                        if (alpha_info == "BLEND")
                             mat->set_blend_mode(BlendMode::Alpha);
+                        else if (alpha_info == "MASK")
+                            mat->set_blend_mode(BlendMode::None);
                         else
                             mat->set_blend_mode(BlendMode::None);
                     }

@@ -15,6 +15,8 @@ layout(location = 1) out vec4 out_normal;
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
 
+uniform float alpha_cutoff;
+
 void main()
 {
 #ifdef NORMAL_MAPPED
@@ -30,6 +32,15 @@ void main()
 
 #ifdef TEXTURED
     out_albedo *= texture(in_texture, in_uv);
+#endif
+
+#ifdef TRANSPARENT
+    out_albedo = texture(in_texture, in_uv);
+#endif
+
+#ifdef MASKED
+    if (out_albedo.a < alpha_cutoff)
+        discard;
 #endif
 
     out_normal = vec4(normal * 0.5 + 0.5, 1.0);

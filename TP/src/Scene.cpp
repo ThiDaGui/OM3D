@@ -107,6 +107,7 @@ namespace OM3D
     void Scene::render() const
     {
         const Frustum frustum = _camera.build_frustum();
+
         // TODO: Mode the creation of this map outside of render
         std::unordered_map<std::uintptr_t,
                            std::unordered_map<std::uintptr_t, SceneObjectInstance>>
@@ -155,9 +156,9 @@ namespace OM3D
         };
         std::sort(transparent_objects_sorted.begin(), transparent_objects_sorted.end(), comp);
 
-        //instance transparent objects
+        // instance transparent objects
         std::unordered_map<std::uintptr_t, std::unordered_map<std::uintptr_t, SceneObjectInstance>> instances;
-        
+
         for (std::reverse_iterator<std::vector<SceneObject>::iterator> it = transparent_objects_sorted.rbegin(); it != transparent_objects_sorted.rend(); ++it)
         {
             if (it->ObjInFrustrum(frustum, _camera.position()))
@@ -165,15 +166,14 @@ namespace OM3D
                 instances[it->getMaterialAddr()][it->getMeshAddr()].push_back(*it);
             }
         }
-        for(auto &pair_ : instances)
+        for (auto &pair_ : instances)
         {
-            for(auto &pair : pair_.second)
+            for (auto &pair : pair_.second)
             {
                 pair.second.init();
                 pair.second.render();
             }
         }
-
     }
 
     void Scene::deferred(std::shared_ptr<Program> deffered_sun_program) const
