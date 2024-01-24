@@ -34,10 +34,6 @@ void main()
     out_albedo *= texture(in_texture, in_uv);
 #endif
 
-#ifdef TRANSPARENT
-    out_albedo = texture(in_texture, in_uv);
-#endif
-
 #ifdef MASKED
     if (out_albedo.a < alpha_cutoff)
         discard;

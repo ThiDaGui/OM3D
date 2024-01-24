@@ -168,19 +168,19 @@ namespace OM3D
     {
         Material material;
         material._program =
-            Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 2>{"TEXTURED", "TRANSPARENT"});
+            Program::from_files("lit.frag", "instanced.vert", std::array<std::string, 2>{"TEXTURED", "TRANSPARENT"});
         return material;
     }
 
     Material Material::textured_normal_mapped_transparent_material()
     {
         Material material;
-        material._program = Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 3>{"TEXTURED", "NORMAL_MAPPED", "TRANSPARENT"});
+        material._program = Program::from_files("lit.frag", "instanced.vert", std::array<std::string, 3>{"TEXTURED", "NORMAL_MAPPED", "TRANSPARENT"});
         material.set_blend_mode(BlendMode::Alpha);
         return material;
     }
 
-    Material Material::textured_masked_material(double alpha_cutoff)
+    Material Material::textured_masked_material(float alpha_cutoff)
     {
         Material material;
         material._program = Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 2>{"TEXTURED", "MASKED"});
@@ -188,7 +188,7 @@ namespace OM3D
         return material;
     }
 
-    Material Material::textured_normal_mapped_masked_material(double alpha_cutoff)
+    Material Material::textured_normal_mapped_masked_material(float alpha_cutoff)
     {
         Material material;
         material._program = Program::from_files("g_buffer.frag", "instanced.vert", std::array<std::string, 3>{"TEXTURED", "NORMAL_MAPPED", "MASKED"});

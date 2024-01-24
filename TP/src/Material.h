@@ -64,8 +64,8 @@ namespace OM3D
         static Material textured_transparent_material();
         static Material textured_normal_mapped_transparent_material();
 
-        static Material textured_masked_material(double alpha_cutoff = 0.5);
-        static Material textured_normal_mapped_masked_material(double alpha_cutoff = 0.5);
+        static Material textured_masked_material(float alpha_cutoff = 0.5);
+        static Material textured_normal_mapped_masked_material(float alpha_cutoff = 0.5);
 
         // PointLight
         static Material point_light_material();
@@ -79,7 +79,7 @@ namespace OM3D
         std::shared_ptr<Program> _program;
         std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;
 
-        double alpha_cutoff = 0.5;
+        float alpha_cutoff = 0.5;
 
         BlendMode _blend_mode = BlendMode::None;
         DepthTestMode _depth_test_mode = DepthTestMode::Standard;

@@ -18,6 +18,9 @@ layout(location = 5) in vec3 in_bitangent;
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
 
+
+uniform float alpha_cutoff;
+
 layout(binding = 0) uniform Data {
     FrameData frame;
 };
@@ -56,7 +59,7 @@ void main() {
 
     out_color = vec4(in_color * acc, 1.0);
 
-#ifdef TEXTURED
+#ifdef TRANSPARENT
     out_color *= texture(in_texture, in_uv);
 #endif
 
