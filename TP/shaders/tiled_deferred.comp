@@ -10,6 +10,7 @@ layout(binding = 1) uniform sampler2D in_normal;
 layout(binding = 2) uniform sampler2D in_depth;
 
 layout(binding = 0) uniform writeonly image2D out_color;
+layout(binding = 1) uniform writeonly image2D debug;
 
 layout(binding = 0) uniform Data {
 	FrameData frame;
@@ -19,49 +20,119 @@ layout(binding = 1) buffer PointLights {
 	PointLight point_lights[];
 };
 
+struct AABB {
+	vec3 minPoint;
+	vec3 maxPoint;
+};
+
+vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
+	const vec3 ndc = vec3(uv * 2.0 - vec2(1.0), depth);
+	const vec4 p = inv_viewproj * vec4(ndc, 1.0);
+	return p.xyz/p.w;
+}
+
 ivec2 pixel_coord = ivec2(gl_GlobalInvocationID.xy);
-vec2 image_size = vec2(textureSize(in_albedo, 0));
-vec2 uv_coord = vec2(float(pixel_coord.x) + 0.5, float(pixel_coord.y) + 0.5) / image_size;
 
 shared uint i_point_lights[64];
 shared uint nb_point_lights = 0;
 
-bool is_inside(PointLight light) {
-	return true;
+// x = z_min, y = z_max
+shared uvec2 tile_dist_bounds;
+
+bool is_inside(PointLight light, AABB boundingBox) {
+	vec4 view_space_light_pos = frame.camera.view * vec4(light.position, 1.0);
+	view_space_light_pos.xyz /= view_space_light_pos.w;
+
+	vec3 closest_point = view_space_light_pos.xyz;
+
+	if (view_space_light_pos.x > boundingBox.maxPoint.x) {
+		closest_point.x = boundingBox.maxPoint.x;
+	}
+	else if (view_space_light_pos.x < boundingBox.minPoint.x) {
+		closest_point.x = boundingBox.minPoint.x;
+	}
+
+	if (view_space_light_pos.y > boundingBox.maxPoint.y) {
+		closest_point.y = boundingBox.maxPoint.y;
+	}
+	else if (view_space_light_pos.y < boundingBox.minPoint.y) {
+		closest_point.y = boundingBox.minPoint.y;
+	}
+
+	if (view_space_light_pos.z > boundingBox.maxPoint.z) {
+		closest_point.z = boundingBox.maxPoint.z;
+	}
+	else if (view_space_light_pos.z < boundingBox.minPoint.z) {
+		closest_point.z = boundingBox.minPoint.z;
+	}
+	return distance(closest_point, view_space_light_pos.xyz) < light.radius;
 }
 
-void determine_points_lights() {
+void cull_point_lights() {
+	const vec2 min_uv = vec2(gl_WorkGroupID.xy) / vec2(gl_NumWorkGroups.xy);
+	const vec2 max_uv = (vec2(gl_WorkGroupID.xy) + vec2(1.0)) / vec2(gl_NumWorkGroups.xy);
+	const mat4 inv_view = inverse(frame.camera.view);
+
+	AABB boundingBox;
+	boundingBox.minPoint = unproject(min_uv, uintBitsToFloat(tile_dist_bounds.x), inv_view);
+	boundingBox.maxPoint = unproject(max_uv, uintBitsToFloat(tile_dist_bounds.y), inv_view);
+
+	imageStore(debug, pixel_coord, vec4(boundingBox.minPoint, 1.0));
+
 	for (uint i = 0; i != frame.point_light_count; i++) {
-		PointLight light = point_lights[i];
-		if (is_inside(light)) {
+		const PointLight light = point_lights[i];
+		if (is_inside(light, boundingBox)) {
 			i_point_lights[nb_point_lights++] = i;
 		}
 	}
 }
 
-vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
-	const vec3 ndc = vec3(uv, depth);
-	const vec4 p = inv_viewproj * vec4(ndc, 1.0);
-	return p.xyz/p.w;
-}
-
 void main() {
-	if (gl_LocalInvocationID.yx == uvec2(1, 1))
-	{
-		nb_point_lights = 0;
-		determine_points_lights();
-	}
-	groupMemoryBarrier();
 
+	const ivec2 size = imageSize(out_color);
+	const vec2 uv_coord =
+		vec2(float(pixel_coord.x) + 0.5, float(pixel_coord.y) + 0.5) / vec2(size);
 
+	
 	const vec3 normal = (texelFetch(in_normal, pixel_coord, 0).rgb) * 2.0 - 1.0;
 	const vec3 albedo = texelFetch(in_albedo, pixel_coord, 0).rgb;
 	const float depth = texelFetch(in_depth, pixel_coord, 0).r;
 
+	const uint uint_z = floatBitsToUint(depth);
+
+	// Initialise shared variables
+	if (gl_LocalInvocationID.x == 1 && gl_LocalInvocationID.y == 1)
+	{
+		tile_dist_bounds = uvec2(uint_z);
+		nb_point_lights = 0;
+	}
+	barrier();
+
+	// compute z_min and z_max
+	// Warning, we are in reverse-Z, so z_min in geater than z_max in clip space
+	if (pixel_coord.x < size.x && pixel_coord.y < size.y) {
+		atomicMax(tile_dist_bounds.x, uint_z);
+		atomicMin(tile_dist_bounds.y, uint_z);
+	}
+
+	barrier();
+
+	// cull pointlights
+	if (gl_LocalInvocationID.yx == uvec2(1, 1))
+	{
+		cull_point_lights();
+	}
+	barrier();
+
+	if (!(pixel_coord.x < size.x && pixel_coord.y < size.y))
+		return;
+
+	/*
+	// color
 	vec3 acc = frame.sun_color * max(0.0, dot(frame.sun_dir, normal));
 	for (uint i = 0; i != nb_point_lights; i++) {
 		PointLight light = point_lights[i_point_lights[i]];
-		
+
 		const mat4 inv_viewproj = inverse(frame.camera.view_proj);
 
 		const vec3 world_space_pos = unproject(uv_coord, depth, inv_viewproj);
@@ -77,4 +148,6 @@ void main() {
 	}
 
 	imageStore(out_color, pixel_coord, vec4(acc * albedo, 1.0));
+	*/
+	imageStore(out_color, pixel_coord, vec4(vec3(nb_point_lights), 1.0));
 }

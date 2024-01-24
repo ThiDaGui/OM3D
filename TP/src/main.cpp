@@ -270,6 +270,7 @@ struct RendererState {
     Texture g_buffer_normal;
 
     Texture deferred_texture;
+    Texture debug_texture;
 
     Framebuffer g_buffer_framebuffer;
     Framebuffer deferred_framebuffer;
@@ -283,6 +284,8 @@ struct RendererState {
             state.g_buffer_albedo = Texture(size, ImageFormat::RGBA8_sRGB);
             state.g_buffer_normal = Texture(size, ImageFormat::RGBA8_UNORM);
             state.deferred_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
+            state.debug_texture =
+                Texture(size, OM3D::ImageFormat::RGBA16_FLOAT);
 
             state.g_buffer_framebuffer = Framebuffer(
                 &state.depth_texture,
@@ -402,7 +405,16 @@ int main(int argc, char **argv) {
             renderer.g_buffer_normal.bind(1);
             renderer.depth_texture.bind(2);
 
-            scene->deferred(defered_sun_program);
+            renderer.deferred_texture.bind_as_image(0, AccessType::WriteOnly);
+            renderer.debug_texture.bind_as_image(1,
+                                                 OM3D::AccessType::WriteOnly);
+
+            // scene->deferred(defered_sun_program);
+            tiled_deferred_program->bind();
+            glm::uvec3 num_groups{ renderer.deferred_texture.size(), 1 };
+            num_groups = (num_groups + glm::uvec3(7)) / glm::uvec3(8);
+            glDispatchCompute(num_groups.x, num_groups.y, num_groups.z);
+            glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
             // Blit result to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
