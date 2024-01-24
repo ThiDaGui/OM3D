@@ -20,6 +20,7 @@ layout(binding = 1) uniform sampler2D in_normal_texture;
 
 
 uniform float alpha_cutoff;
+uniform vec4 BaseColor;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -62,6 +63,7 @@ void main() {
 #ifdef TRANSPARENT
     out_color *= texture(in_texture, in_uv);
 #endif
+    out_color *= BaseColor;
 
 #ifdef DEBUG_NORMAL
     out_color = vec4(normal * 0.5 + 0.5, 1.0);
